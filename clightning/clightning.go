@@ -214,11 +214,13 @@ func (cl *ClightningClient) SpendableMsat(scid string) (uint64, error) {
 	scid = lightning.Scid(scid).ClnStyle()
 	var res struct {
 		Channels []struct {
-			ShortChannelId string            `json:"short_channel_id,omitempty"`
-			ToUsMsat       glightning.Amount `json:"to_us_msat,omitempty"`
-			SpendableMsat  glightning.Amount `json:"spendable_msat,omitempty"`
+			ShortChannelId     string            `json:"short_channel_id,omitempty"`
+			ToUsMsat           glightning.Amount `json:"to_us_msat,omitempty"`
+			SpendableMsat      glightning.Amount `json:"spendable_msat,omitempty"`
+			MaximumHtlcOutMsat glightning.Amount `json:"maximum_htlc_out_msat,omitempty"`
 		} `json:"channels"`
 	}
+
 	err := cl.glightning.Request(ListPeerChannelsRequest{}, &res)
 	if err != nil {
 		return 0, err
@@ -226,13 +228,20 @@ func (cl *ClightningClient) SpendableMsat(scid string) (uint64, error) {
 	for _, ch := range res.Channels {
 		if ch.ShortChannelId == scid {
 			if ch.SpendableMsat.MSat() > 0 {
-				return ch.SpendableMsat.MSat(), nil
+				return min(ch.SpendableMsat.MSat(), ch.MaximumHtlcOutMsat.MSat()), nil
 			} else {
-				return ch.ToUsMsat.MSat(), nil
+				return min(ch.ToUsMsat.MSat(), ch.MaximumHtlcOutMsat.MSat()), nil
 			}
 		}
 	}
 	return 0, fmt.Errorf("could not find a channel with scid: %s", scid)
+}
+
+func min(x, y uint64) uint64 {
+	if x < y {
+		return x
+	}
+	return y
 }
 
 // ReceivableMsat returns an estimate of the total we could receive through the

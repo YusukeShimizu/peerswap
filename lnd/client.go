@@ -93,10 +93,18 @@ func (l *Client) SpendableMsat(scid string) (uint64, error) {
 	for _, ch := range r.Channels {
 		channelShortId := lnwire.NewShortChanIDFromInt(ch.ChanId)
 		if channelShortId.String() == s.LndStyle() {
-			return uint64(ch.LocalBalance * 1000), nil
+			return min(ch.RemoteConstraints.MaxPendingAmtMsat,
+				uint64((ch.LocalBalance-int64(ch.LocalConstraints.GetChanReserveSat()))*1000)), nil
 		}
 	}
 	return 0, fmt.Errorf("could not find a channel with scid: %s", scid)
+}
+
+func min(x, y uint64) uint64 {
+	if x < y {
+		return x
+	}
+	return y
 }
 
 // ReceivableMsat returns an estimate of the total we could receive through the
