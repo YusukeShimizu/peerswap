@@ -594,7 +594,7 @@ func (r *PayFeeInvoiceAction) Execute(services *SwapServices, swap *SwapData) Ev
 		return swap.HandleError(errors.New(fmt.Sprintf("Fee is too damn high. Max expected: %v Received %v", maxExpected, swap.OpeningTxFee)))
 	}
 
-	sp, err := ll.SpendableMsat(swap.SwapInRequest.Scid)
+	sp, err := ll.SpendableMsat(swap.SwapOutRequest.Scid)
 	if err != nil {
 		return swap.HandleError(err)
 	}
