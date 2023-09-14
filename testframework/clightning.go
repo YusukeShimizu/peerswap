@@ -504,3 +504,18 @@ func (n *CLightningNode) GetMemoFromPayreq(bolt11 string) (string, error) {
 
 	return r.Description, nil
 }
+
+func (n *CLightningNode) GetFeeInvoiceAmtSat() (sat uint64, err error) {
+	rx := regexp.MustCompile(`^peerswap .* fee .*`)
+	var feeInvoiceAmt uint64
+	r, err := n.Rpc.ListInvoices()
+	if err != nil {
+		return 0, err
+	}
+	for _, i := range r {
+		if rx.MatchString(i.Description) {
+			feeInvoiceAmt += i.AmountMilliSatoshi.MSat() / 1000
+		}
+	}
+	return feeInvoiceAmt, nil
+}

@@ -8,6 +8,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/lightningnetwork/lnd/lnwire"
@@ -412,11 +413,7 @@ func (n *LndNode) IsChannelActive(scid string) (bool, error) {
 	for _, ch := range r.Channels {
 		chScid := ScidFromLndChanId(ch.ChanId)
 		if chScid == scid {
-			chinfo, err := n.Rpc.GetChanInfo(context.Background(), &lnrpc.ChanInfoRequest{ChanId: ch.ChanId})
-			if err != nil {
-				return false, nil
-			}
-			return ch.Active && chinfo.Node1Policy != nil && chinfo.Node2Policy != nil, nil
+			return ch.Active, nil
 		}
 	}
 
@@ -515,4 +512,20 @@ func (n *LndNode) GetMemoFromPayreq(bolt11 string) (string, error) {
 func ScidFromLndChanId(id uint64) string {
 	lndScid := lnwire.NewShortChanIDFromInt(id)
 	return fmt.Sprintf("%dx%dx%d", lndScid.BlockHeight, lndScid.TxIndex, lndScid.TxPosition)
+}
+
+func (n *LndNode) GetFeeInvoiceAmtSat() (sat uint64, err error) {
+	rx := regexp.MustCompile(`^peerswap .* fee .*`)
+	var feeInvoiceAmt uint64
+	r, err := n.Rpc.ListInvoices(context.Background(), &lnrpc.ListInvoiceRequest{})
+	if err != nil {
+		return 0, err
+	}
+
+	for _, i := range r.Invoices {
+		if rx.MatchString(i.GetMemo()) {
+			feeInvoiceAmt += uint64(i.GetValue())
+		}
+	}
+	return feeInvoiceAmt, nil
 }
