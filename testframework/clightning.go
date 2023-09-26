@@ -451,6 +451,18 @@ func (n *CLightningNode) AddInvoice(amtSat uint64, desc, label string) (payreq s
 
 func (n *CLightningNode) PayInvoice(payreq string) error {
 	_, err := n.Rpc.PayBolt(payreq)
+	if err != nil {
+		return err
+	}
+	decodedBolt11, err := n.Rpc.DecodeBolt11(payreq)
+	if err != nil {
+		return err
+	}
+	res, err := n.Rpc.WaitSendPay(decodedBolt11.PaymentHash, 0)
+	if err != nil {
+		return err
+	}
+	fmt.Println(res)
 	return err
 }
 

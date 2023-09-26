@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"math"
 	"os"
 	"sync"
@@ -309,7 +310,7 @@ func Test_ClnCln_Bitcoin_SwapIn(t *testing.T) {
 }
 
 func Test_ClnCln_Bitcoin_SwapOut(t *testing.T) {
-	IsIntegrationTest(t)
+	//	IsIntegrationTest(t)
 	t.Parallel()
 
 	t.Run("claim_normal", func(t *testing.T) {
@@ -370,11 +371,25 @@ func Test_ClnCln_Bitcoin_SwapOut(t *testing.T) {
 		}
 		asset := "btc"
 
+		_, err := lightningds[0].SetHtlcMaximumMilliSatoshis(scid, channelBalances[0]*1000/2-1)
+		assert.NoError(t, err)
+		inv, err := lightningds[1].AddInvoice(channelBalances[0]/2, "shift balance", "")
+		require.NoError(err)
+		b, err := lightningds[0].GetChannelBalanceSat(scid)
+		require.NoError(err)
+		fmt.Println(b)
+		err = lightningds[0].PayInvoice(inv)
+		require.NoError(err)
+		b, err = lightningds[0].GetChannelBalanceSat(scid)
+		require.NoError(err)
+		fmt.Println(b)
+
 		// Do swap.
 		go func() {
 			// We need to run this in a go routine as the Request call is blocking and sometimes does not return.
 			var response map[string]interface{}
-			lightningds[0].Rpc.Request(&clightning.SwapOut{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset}, &response)
+			err = lightningds[0].Rpc.Request(&clightning.SwapOut{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset}, &response)
+			assert.NoError(t, err)
 		}()
 		preimageClaimTest(t, params)
 	})

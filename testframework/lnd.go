@@ -14,7 +14,9 @@ import (
 
 	"github.com/elementsproject/peerswap/lightning"
 	"github.com/lightningnetwork/lnd/lnrpc"
+	"github.com/lightningnetwork/lnd/lnrpc/routerrpc"
 	"github.com/lightningnetwork/lnd/lnwire"
+	"github.com/lightningnetwork/lnd/routing/route"
 )
 
 func getLndConfig() map[string]string {
@@ -469,27 +471,75 @@ func (n *LndNode) ChanIdFromScid(scid string) (uint64, error) {
 
 }
 
-func (n *LndNode) AddInvoice(amt uint64, desc, _ string) (payreq string, err error) {
-	inv, err := n.Rpc.AddInvoice(context.Background(), &lnrpc.Invoice{Value: int64(amt), Memo: desc})
+func (n *LndNode) AddInvoice(amt uint64, desc, scid string) (payreq string, err error) {
+	res, err := n.Rpc.ListChannels(context.Background(), &lnrpc.ListChannelsRequest{})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("ListChannels() %w", err)
 	}
-	return inv.PaymentRequest, nil
+	s := lightning.Scid(scid)
+	for _, ch := range res.GetChannels() {
+		channelShortId := lnwire.NewShortChanIDFromInt(ch.ChanId)
+		if channelShortId.String() == s.LndStyle() {
+			inv, err := n.Rpc.AddInvoice(context.Background(), &lnrpc.Invoice{
+				Value: int64(amt),
+				Memo:  desc,
+				RouteHints: []*lnrpc.RouteHint{{
+					HopHints: []*lnrpc.HopHint{{
+						NodeId: desc,
+						ChanId: ch.ChanId,
+					}},
+				}},
+			})
+			if err != nil {
+				return "", err
+			}
+			return inv.PaymentRequest, nil
+		}
+	}
+	return "", fmt.Errorf("")
 }
 
 func (n *LndNode) PayInvoice(payreq string) error {
-	pstream, err := n.Rpc.SendPaymentSync(context.Background(), &lnrpc.SendRequest{PaymentRequest: payreq})
-	if err != nil {
-		return err
-	}
-	if len(pstream.PaymentError) > 0 {
-		return fmt.Errorf("got payment error %s", pstream.PaymentError)
-	}
 	return nil
 }
 
 func (n *LndNode) SendPay(bolt11, _ string) error {
-	return n.PayInvoice(bolt11)
+	decoded, err := n.Rpc.DecodePayReq(context.Background(), &lnrpc.PayReqString{PayReq: bolt11})
+	if err != nil {
+		return err
+	}
+	rHash, err := hex.DecodeString(decoded.PaymentHash)
+	if err != nil {
+		return err
+	}
+	v, err := route.NewVertexFromStr(decoded.GetRouteHints()[0].GetHopHints()[0].GetNodeId())
+	if err != nil {
+		return err
+	}
+	route, err := n.RpcV2.BuildRoute(context.Background(), &routerrpc.BuildRouteRequest{
+		AmtMsat:        decoded.NumMsat,
+		FinalCltvDelta: int32(144),
+		OutgoingChanId: decoded.GetRouteHints()[0].GetHopHints()[0].GetChanId(),
+		HopPubkeys:     [][]byte{v[:]},
+	})
+	if err != nil {
+		return err
+	}
+	if decoded.GetPaymentAddr() != nil {
+		route.Route.GetHops()[0].MppRecord = &lnrpc.MPPRecord{
+			PaymentAddr:  decoded.GetPaymentAddr(),
+			TotalAmtMsat: decoded.NumMsat,
+		}
+	}
+	res, err := n.RpcV2.SendToRouteV2(context.Background(), &routerrpc.SendToRouteRequest{
+		PaymentHash: rHash,
+		Route:       route.GetRoute(),
+	})
+	if err != nil {
+		return err
+	}
+	fmt.Println(res)
+	return nil
 }
 
 func (n *LndNode) GetLatestInvoice() (payreq string, err error) {

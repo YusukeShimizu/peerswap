@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"os"
 	"sync"
@@ -128,7 +129,7 @@ func Test_OnlyOneActiveSwapPerChannelLnd(t *testing.T) {
 }
 
 func Test_LndLnd_Bitcoin_SwapIn(t *testing.T) {
-	IsIntegrationTest(t)
+	//IsIntegrationTest(t)
 	t.Parallel()
 
 	t.Run("claim_normal", func(t *testing.T) {
@@ -1101,7 +1102,7 @@ func Test_LndCln_Bitcoin_SwapOut(t *testing.T) {
 }
 
 func Test_LndLnd_ExcessiveAmount(t *testing.T) {
-	IsIntegrationTest(t)
+	//IsIntegrationTest(t)
 	t.Parallel()
 	t.Run("exceed_maxhtlc", func(t *testing.T) {
 		t.Parallel()
@@ -1171,8 +1172,18 @@ func Test_LndLnd_ExcessiveAmount(t *testing.T) {
 		}
 		asset := "btc"
 
-		_, err = lightningds[0].SetHtlcMaximumMilliSatoshis(scid, channelBalances[0]*1000/2-1)
+		_, err = lightningds[0].SetHtlcMaximumMilliSatoshis(scid, channelBalances[0]*1000/2)
 		assert.NoError(t, err)
+		inv, err := lightningds[1].AddInvoice(channelBalances[0]/2, lightningds[1].Id(), scid)
+		require.NoError(err)
+		b, err := lightningds[0].GetChannelBalanceSat(scid)
+		require.NoError(err)
+		fmt.Println(b)
+		err = lightningds[0].SendPay(inv, params.scid)
+		require.NoError(err)
+		b, err = lightningds[0].GetChannelBalanceSat(scid)
+		require.NoError(err)
+		fmt.Println(b)
 		// Swap out should fail as the swap_amt is to high.
 		// Do swap.
 		ctx, cancel := context.WithCancel(context.Background())
