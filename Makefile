@@ -89,7 +89,8 @@ test-bitcoin-cln: test-bins
 	'Test_ClnCln_Bitcoin_SwapOut|'\
 	'Test_ClnCln_Bitcoin_SwapIn|'\
 	'Test_ClnLnd_Bitcoin_SwapOut|'\
-	'Test_ClnLnd_Bitcoin_SwapIn)'\
+	'Test_ClnLnd_Bitcoin_SwapIn|'\
+	'Test_ClnCln_ExcessiveAmount)'\
 	 ./test
 .PHONY: test-bitoin-cln
 
@@ -99,7 +100,8 @@ test-bitcoin-lnd: test-bins
 	'Test_LndLnd_Bitcoin_SwapOut|'\
 	'Test_LndLnd_Bitcoin_SwapIn|'\
 	'Test_LndCln_Bitcoin_SwapOut|'\
-	'Test_LndCln_Bitcoin_SwapIn)'\
+	'Test_LndCln_Bitcoin_SwapIn|'\
+	'Test_LndLnd_ExcessiveAmount)'\
 	 ./test
 	${INTEGRATION_TEST_ENV} go test $(INTEGRATION_TEST_OPTS) ./lnd
 .PHONY: test-bitcoin-lnd
@@ -172,3 +174,7 @@ clean-lnd:
 
 clean: clean-cln clean-lnd
 .PHONY: clean
+
+fmt:
+	gofmt -l -w -s .
+.PHONY: fmt
