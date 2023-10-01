@@ -168,7 +168,8 @@ type SwapInAgreementMessage struct {
 	Pubkey string `json:"pubkey"`
 	// Premium is a compensation in Sats that the swap partner wants to be payed
 	// in order to participate in the swap.
-	Premium uint64 `json:"premium"`
+	Premium    uint64 `json:"premium"`
+	FeeClaimTx uint64 `json:"fee_claim_tx"`
 }
 
 func (s SwapInAgreementMessage) Validate(swap *SwapData) error {

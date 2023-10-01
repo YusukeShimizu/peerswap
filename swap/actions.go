@@ -143,12 +143,13 @@ func (a CheckRequestWrapperAction) Execute(services *SwapServices, swap *SwapDat
 type SwapInReceiverInitAction struct{}
 
 func (s *SwapInReceiverInitAction) Execute(services *SwapServices, swap *SwapData) EventType {
+	// todo 設定ファイルから取るなりする
+	var premium uint64 = 0
 	agreementMessage := &SwapInAgreementMessage{
 		ProtocolVersion: PEERSWAP_PROTOCOL_VERSION,
 		SwapId:          swap.GetId(),
 		Pubkey:          hex.EncodeToString(swap.GetPrivkey().PubKey().SerializeCompressed()),
-		// todo: set premium
-		Premium: 0,
+		Premium:         premium,
 	}
 	swap.SwapInAgreement = agreementMessage
 
