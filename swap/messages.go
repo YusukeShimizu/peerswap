@@ -264,6 +264,10 @@ type SwapOutAgreementMessage struct {
 	// Payreq is a BOLT#11 invoice with an amount that covers the fee expenses
 	// for the on-chain transactions.
 	Payreq string
+	// Premium is a compensation in Sats that the swap partner wants to be payed
+	// in order to participate in the swap.
+	Premium    uint64 `json:"premium"`
+	FeeClaimTx uint64 `json:"fee_claim_tx"`
 }
 
 func (s SwapOutAgreementMessage) Validate(swap *SwapData) error {

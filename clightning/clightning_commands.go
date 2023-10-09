@@ -183,11 +183,12 @@ func (s *LiquidSendToAddress) LongDescription() string {
 
 // SwapOut starts a new swapout (paying an Invoice for onchain liquidity)
 type SwapOut struct {
-	ShortChannelId string            `json:"short_channel_id"`
-	SatAmt         uint64            `json:"amt_sat"`
-	Asset          string            `json:"asset"`
-	Force          bool              `json:"force"`
-	cl             *ClightningClient `json:"-"`
+	ShortChannelId         string            `json:"short_channel_id"`
+	SatAmt                 uint64            `json:"amt_sat"`
+	Asset                  string            `json:"asset"`
+	Force                  bool              `json:"force"`
+	MaxAcceptPremiumSatAmt uint64            `json:"max_accept_premium_amt_sat"`
+	cl                     *ClightningClient `json:"-"`
 }
 
 func (l *SwapOut) New() interface{} {
@@ -302,10 +303,11 @@ func (g *SwapOut) Get(client *ClightningClient) jrpc2.ServerMethod {
 
 // SwapIn Starts a new swap in(providing onchain liquidity)
 type SwapIn struct {
-	ShortChannelId string `json:"short_channel_id"`
-	SatAmt         uint64 `json:"amt_sat"`
-	Asset          string `json:"asset"`
-	Force          bool   `json:"force"`
+	ShortChannelId         string `json:"short_channel_id"`
+	SatAmt                 uint64 `json:"amt_sat"`
+	Asset                  string `json:"asset"`
+	Force                  bool   `json:"force"`
+	MaxAcceptPremiumSatAmt uint64 `json:"max_accept_premium_amt_sat"`
 
 	cl *ClightningClient `json:"-"`
 }

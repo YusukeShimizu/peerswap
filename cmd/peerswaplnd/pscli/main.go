@@ -73,6 +73,11 @@ var (
 		Name:     "peer_pubkey",
 		Required: true,
 	}
+	maxAcceptPremiumSatAmtFlag = cli.Uint64Flag{
+		Name:     "max_accept_premium",
+		Usage:    "Amount of Sats to accept as premium",
+		Required: true,
+	}
 
 	swapOutCommand = cli.Command{
 		Name:  "swapout",
@@ -81,6 +86,7 @@ var (
 			satAmountFlag,
 			channelIdFlag,
 			assetFlag,
+			maxAcceptPremiumSatAmtFlag,
 		},
 		Action: swapOut,
 	}
@@ -92,6 +98,7 @@ var (
 			satAmountFlag,
 			channelIdFlag,
 			assetFlag,
+			maxAcceptPremiumSatAmtFlag,
 		},
 		Action: swapIn,
 	}
@@ -213,9 +220,10 @@ func swapIn(ctx *cli.Context) error {
 	defer cleanup()
 
 	res, err := client.SwapIn(context.Background(), &peerswaprpc.SwapInRequest{
-		ChannelId:  ctx.Uint64(channelIdFlag.Name),
-		SwapAmount: ctx.Uint64(satAmountFlag.Name),
-		Asset:      ctx.String(assetFlag.Name),
+		ChannelId:            ctx.Uint64(channelIdFlag.Name),
+		SwapAmount:           ctx.Uint64(satAmountFlag.Name),
+		Asset:                ctx.String(assetFlag.Name),
+		AcceptablePremiumAmt: ctx.Uint64(maxAcceptPremiumSatAmtFlag.Name),
 	})
 	if err != nil {
 		return err
@@ -233,9 +241,10 @@ func swapOut(ctx *cli.Context) error {
 	defer cleanup()
 
 	res, err := client.SwapOut(context.Background(), &peerswaprpc.SwapOutRequest{
-		ChannelId:  ctx.Uint64(channelIdFlag.Name),
-		SwapAmount: ctx.Uint64(satAmountFlag.Name),
-		Asset:      ctx.String(assetFlag.Name),
+		ChannelId:            ctx.Uint64(channelIdFlag.Name),
+		SwapAmount:           ctx.Uint64(satAmountFlag.Name),
+		Asset:                ctx.String(assetFlag.Name),
+		AcceptablePremiumAmt: ctx.Uint64(maxAcceptPremiumSatAmtFlag.Name),
 	})
 	if err != nil {
 		return err

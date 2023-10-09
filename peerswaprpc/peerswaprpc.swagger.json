@@ -542,6 +542,7 @@
         "peers": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/peerswapPeerSwapPeer"
           }
         }
@@ -564,6 +565,7 @@
         "swaps": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/peerswapPrettyPrintSwap"
           }
         }
@@ -587,6 +589,7 @@
         "channels": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/peerswapPeerSwapPeerChannel"
           }
         },
@@ -717,6 +720,7 @@
         "requestedSwaps": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/peerswapRequestedSwap"
           }
         }
@@ -776,6 +780,10 @@
         },
         "force": {
           "type": "boolean"
+        },
+        "acceptablePremiumAmt": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
@@ -795,6 +803,10 @@
         },
         "force": {
           "type": "boolean"
+        },
+        "acceptablePremiumAmt": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
@@ -849,6 +861,7 @@
         "details": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
         }

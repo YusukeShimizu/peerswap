@@ -203,6 +203,18 @@ func (s *ClaimSwapTransactionWithPreimageAction) Execute(services *SwapServices,
 type CreateAndBroadcastOpeningTransaction struct{}
 
 func (c *CreateAndBroadcastOpeningTransaction) Execute(services *SwapServices, swap *SwapData) EventType {
+	// if the premium exceeds its expectations:
+	// 	MUST fail_the_swap
+	if swap.SwapInAgreement.Premium > services.policy.GetMinSwapAmountMsat() {
+		return swap.HandleError(errors.New("premium is not supported"))
+	}
+	// otherwise:
+	// 	MUST add the premium to the on-chain amount of the opening_transaction.
+	// if the fee_claim_tx exceeds its expectations:
+	// 	MUST fail_the_swap
+	// otherwise:
+	// 	MUST add the fee_claim_tx to the on-chain amount of the opening_transaction.
+
 	txWatcher, wallet, _, err := services.getOnChainServices(swap.GetChain())
 	if err != nil {
 		return swap.HandleError(err)
@@ -609,6 +621,11 @@ func (r *PayFeeInvoiceAction) Execute(services *SwapServices, swap *SwapData) Ev
 		return swap.HandleError(err)
 	}
 	swap.FeePreimage = preimage
+
+	// if the premium exceeds its expectations:
+	// MUST fail_the_swap
+	// if the fee_claim_tx exceeds its expectations:
+	// MUST fail_the_swap
 	return Event_ActionSucceeded
 }
 
