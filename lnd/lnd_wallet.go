@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 
 	"github.com/btcsuite/btcd/btcutil/psbt"
 	"github.com/btcsuite/btcd/wire"
@@ -115,8 +116,11 @@ func (l *Client) CreatePreimageSpendingTransaction(swapParams *swap.OpeningParam
 	if err != nil {
 		return "", "", err
 	}
+	size := tx.SerializeSizeStripped()
+	fmt.Println("PreimageSpendingTransaction SIZE:", size)
 
 	txHex := hex.EncodeToString(bytesBuffer.Bytes())
+	fmt.Println(txHex)
 
 	_, err = l.walletClient.PublishTransaction(l.ctx, &walletrpc.Transaction{TxHex: bytesBuffer.Bytes()})
 	if err != nil {
@@ -152,9 +156,10 @@ func (l *Client) CreateCsvSpendingTransaction(swapParams *swap.OpeningParams, cl
 	if err != nil {
 		return "", "", err
 	}
-
+	size := tx.SerializeSizeStripped()
+	fmt.Println("CsvSpendingTransaction SIZE:", size)
 	txHex := hex.EncodeToString(bytesBuffer.Bytes())
-
+	fmt.Println(txHex)
 	_, err = l.walletClient.PublishTransaction(l.ctx, &walletrpc.Transaction{TxHex: bytesBuffer.Bytes()})
 	if err != nil {
 		return "", "", err
@@ -167,15 +172,11 @@ func (l *Client) CreateCoopSpendingTransaction(swapParams *swap.OpeningParams, c
 	if err != nil {
 		return "", "", err
 	}
-	refundFee, err := l.GetRefundFee()
-	if err != nil {
-		return "", "", err
-	}
 	_, vout, err := l.bitcoinOnChain.GetVoutAndVerify(claimParams.OpeningTxHex, swapParams)
 	if err != nil {
 		return "", "", err
 	}
-	spendingTx, sigHashBytes, redeemScript, err := l.bitcoinOnChain.PrepareSpendingTransaction(swapParams, claimParams, refundAddr, vout, 0, refundFee)
+	spendingTx, sigHashBytes, redeemScript, err := l.bitcoinOnChain.PrepareSpendingTransaction(swapParams, claimParams, refundAddr, vout, 0, 0)
 	if err != nil {
 		return "", "", err
 	}
@@ -197,9 +198,11 @@ func (l *Client) CreateCoopSpendingTransaction(swapParams *swap.OpeningParams, c
 	if err != nil {
 		return "", "", err
 	}
+	size := spendingTx.SerializeSizeStripped()
+	fmt.Println("CoopSpendingTransaction SIZE:", size)
 
 	txHex = hex.EncodeToString(bytesBuffer.Bytes())
-
+	fmt.Println(txHex)
 	_, err = l.walletClient.PublishTransaction(l.ctx, &walletrpc.Transaction{TxHex: bytesBuffer.Bytes()})
 	if err != nil {
 		return "", "", err

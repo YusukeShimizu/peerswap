@@ -6,9 +6,9 @@ import (
 )
 
 type Secp256k1Signer struct {
-	key *btcec.PrivateKey
+	Key *btcec.PrivateKey
 }
 
 func (s *Secp256k1Signer) Sign(hash []byte) (*ecdsa.Signature, error) {
-	return ecdsa.Sign(s.key, hash), nil
+	return ecdsa.Sign(s.Key, hash), nil
 }

@@ -192,7 +192,7 @@ func (p *CLightningProxy) StartProxy() error {
 type LndRpcClient struct {
 	Rpc   lnrpc.LightningClient
 	RpcV2 routerrpc.RouterClient
-	conn  *grpc.ClientConn
+	Conn  *grpc.ClientConn
 }
 
 func NewLndRpcClient(host, certPath, macaroonPath string, options ...grpc.DialOption) (*LndRpcClient, error) {
@@ -260,6 +260,6 @@ func NewLndRpcClient(host, certPath, macaroonPath string, options ...grpc.DialOp
 	return &LndRpcClient{
 		Rpc:   lnRpc,
 		RpcV2: routerRpc,
-		conn:  conn,
+		Conn:  conn,
 	}, nil
 }

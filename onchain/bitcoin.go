@@ -236,7 +236,8 @@ func (b *BitcoinOnChain) PrepareSpendingTransaction(swapParams *swap.OpeningPara
 	// assume largest witness
 	fee := preparedFee
 	if preparedFee == 0 {
-		fee, err = b.GetFee(int64(spendingTx.SerializeSizeStripped()) + 74)
+		size := spendingTx.SerializeSizeStripped()
+		fee, err = b.GetFee(int64(size) + 74)
 		if err != nil {
 			return nil, nil, nil, err
 		}

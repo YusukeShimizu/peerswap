@@ -458,7 +458,7 @@ func (c *ClaimSwapTransactionCoop) Execute(services *SwapServices, swap *SwapDat
 	takerKey, _ := btcec.PrivKeyFromBytes(takerKeyBytes)
 
 	if swap.ClaimTxId == "" {
-		txId, _, err := wallet.CreateCoopSpendingTransaction(swap.GetOpeningParams(), swap.GetClaimParams(), &Secp256k1Signer{key: takerKey})
+		txId, _, err := wallet.CreateCoopSpendingTransaction(swap.GetOpeningParams(), swap.GetClaimParams(), &Secp256k1Signer{Key: takerKey})
 		if err != nil {
 			return swap.HandleError(err)
 		}
