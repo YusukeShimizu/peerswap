@@ -261,7 +261,7 @@ func (l *SwapOut) Call() (jrpc2.Result, error) {
 	}
 
 	pk := l.cl.GetNodeId()
-	swapOut, err := l.cl.swaps.SwapOut(fundingChannels.Id, l.Asset, l.ShortChannelId, pk, l.SatAmt)
+	swapOut, err := l.cl.swaps.SwapOut(fundingChannels.Id, l.Asset, l.ShortChannelId, pk, l.SatAmt, l.MaxAcceptPremiumSatAmt)
 	if err != nil {
 		return nil, err
 	}
@@ -399,7 +399,7 @@ func (l *SwapIn) Call() (jrpc2.Result, error) {
 	}
 
 	pk := l.cl.GetNodeId()
-	swapIn, err := l.cl.swaps.SwapIn(fundingChannels.Id, l.Asset, l.ShortChannelId, pk, l.SatAmt)
+	swapIn, err := l.cl.swaps.SwapIn(fundingChannels.Id, l.Asset, l.ShortChannelId, pk, l.SatAmt, l.MaxAcceptPremiumSatAmt)
 	if err != nil {
 		return nil, err
 	}

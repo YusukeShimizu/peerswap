@@ -40,7 +40,7 @@ func Test_GoodCase(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	aliceSwap, err := aliceSwapService.SwapOut(peer, btc_chain, channelId, initiator, amount)
+	aliceSwap, err := aliceSwapService.SwapOut(peer, btc_chain, channelId, initiator, amount, amount/100)
 	if err != nil {
 		t.Fatalf(" error swapping oput %v: ", err)
 	}
@@ -97,7 +97,7 @@ func Test_FeePaymentFailed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	aliceSwap, err := aliceSwapService.SwapOut(peer, "btc", channelId, initiator, amount)
+	aliceSwap, err := aliceSwapService.SwapOut(peer, "btc", channelId, initiator, amount, amount/100)
 	if err != nil {
 		t.Fatalf(" error swapping oput %v: ", err)
 	}
@@ -138,7 +138,7 @@ func Test_ClaimPaymentFailedCoopClose(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	aliceSwap, err := aliceSwapService.SwapOut(peer, "btc", channelId, initiator, amount)
+	aliceSwap, err := aliceSwapService.SwapOut(peer, "btc", channelId, initiator, amount, amount/100)
 	if err != nil {
 		t.Fatalf(" error swapping oput %v: ", err)
 	}
@@ -223,12 +223,12 @@ func Test_OnlyOneActiveSwapPerChannel(t *testing.T) {
 		failures: 0,
 	})
 
-	_, err := service.SwapOut("peer", "lbtc", "channelID", "alice", uint64(100000))
+	_, err := service.SwapOut("peer", "lbtc", "channelID", "alice", uint64(100000), uint64(100000)/100)
 	assert.Error(t, err, "expected error")
 	assert.ErrorIs(t, err, ActiveSwapError{channelId: "channelID", swapId: swapId.String()})
 	t.Logf("Got Error: %s", err.Error())
 
-	_, err = service.SwapIn("peer", "lbtc", "channelID", "alice", uint64(100000))
+	_, err = service.SwapIn("peer", "lbtc", "channelID", "alice", uint64(100000), uint64(100000)/100)
 	assert.Error(t, err, "expected error")
 	assert.ErrorIs(t, err, ActiveSwapError{channelId: "channelID", swapId: swapId.String()})
 	t.Logf("Got Error: %s", err.Error())
@@ -257,7 +257,7 @@ func TestMessageFromUnexpectedPeer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	aliceSwap, err := aliceSwapService.SwapOut(peer, "btc", channelId, initiator, amount)
+	aliceSwap, err := aliceSwapService.SwapOut(peer, "btc", channelId, initiator, amount, amount/100)
 	if err != nil {
 		t.Fatalf(" error swapping oput %v: ", err)
 	}
@@ -368,7 +368,7 @@ func Test_SwapIn_PeerIsSuspicious(t *testing.T) {
 		newSwapsAllowedReturn:  policy.DefaultPolicy().AllowNewSwaps,
 	}
 
-	_, err := swapService.SwapOut(peer, "regtest", "", node, 100000)
+	_, err := swapService.SwapOut(peer, "regtest", "", node, 100000, 100000/100)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, PeerIsSuspiciousError(peer))
 }
@@ -387,7 +387,7 @@ func Test_SwapOut_PeerIsSuspicious(t *testing.T) {
 		newSwapsAllowedReturn:      policy.DefaultPolicy().AllowNewSwaps,
 	}
 
-	_, err := swapService.SwapOut(peer, "regtest", "", node, 100000)
+	_, err := swapService.SwapOut(peer, "regtest", "", node, 100000, 100000/100)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, PeerIsSuspiciousError(peer))
 }
