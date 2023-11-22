@@ -24,7 +24,7 @@ const (
 	// defaultMinSwapAmount is the default of the minimum in msat that is needed
 	// to perform a swap. We need this lower boundary as it is uneconomical to
 	// swap small amounts.
-	defaultMinSwapAmountMsat uint64 = 100000000
+	defaultMinSwapAmountMsat uint64 = 1
 )
 
 // Global Mutex

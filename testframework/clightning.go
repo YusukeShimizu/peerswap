@@ -214,6 +214,43 @@ func (n *CLightningNode) GetChannelBalanceSat(scid string) (sats uint64, err err
 	return 0, fmt.Errorf("no channel found with scid %s", scid)
 }
 
+func (n *CLightningNode) PrepayProbeSendPay(scid, from, to string, amt glightning.Amount) error {
+
+	route, err := n.Rpc.GetRoute(to, amt.MSat(), 1, 0, from, 0, nil, 1)
+	if err != nil {
+		return fmt.Errorf("GetRoute() %w", err)
+	}
+	preimage, err := lightning.GetPreimage()
+	if err != nil {
+		return err
+	}
+	paymentHash := preimage.Hash().String()
+	_, err = n.Rpc.SendPay(
+		route,
+		paymentHash,
+		"",
+		amt.MSat(),
+		"",
+		"",
+		0,
+	)
+	if err != nil {
+		return fmt.Errorf("SendPay() %w", err)
+	}
+	_, err = n.Rpc.WaitSendPay(paymentHash, 0)
+	if err != nil {
+		pe, ok := err.(*glightning.PaymentError)
+		if !ok {
+			return fmt.Errorf("WaitSendPay() %w", err)
+		}
+		faiCodeWIRE_INCORRECT_OR_UNKNOWN_PAYMENT_DETAILS := 203
+		if pe.RpcError.Code != faiCodeWIRE_INCORRECT_OR_UNKNOWN_PAYMENT_DETAILS {
+			return fmt.Errorf("SendPay() %w", err)
+		}
+	}
+	return err
+}
+
 func (n *CLightningNode) GetScid(remote LightningNode) (string, error) {
 	peers, err := n.Rpc.ListPeers()
 	if err != nil {
@@ -299,7 +336,7 @@ func (n *CLightningNode) FundWallet(sats uint64, mineBlock bool) (string, error)
 	return addr, nil
 }
 
-func (n *CLightningNode) OpenChannel(remote LightningNode, capacity uint64, connect, confirm, waitForActiveChannel bool) (string, error) {
+func (n *CLightningNode) OpenChannel(remote LightningNode, capacity, pushAmt uint64, connect, confirm, waitForActiveChannel bool) (string, error) {
 	_, err := n.FundWallet(uint64(1.5*float64(capacity)), true)
 	if err != nil {
 		return "", fmt.Errorf("FundWallet() %w", err)
@@ -317,7 +354,8 @@ func (n *CLightningNode) OpenChannel(remote LightningNode, capacity uint64, conn
 		}
 	}
 
-	fr, err := n.Rpc.FundChannel(remote.Id(), &glightning.Sat{Value: capacity})
+	pushAmtSat := &glightning.Sat{Value: pushAmt}
+	fr, err := n.Rpc.FundChannelExt(remote.Id(), &glightning.Sat{Value: capacity}, nil, true, nil, pushAmtSat.ConvertMsat())
 	if err != nil {
 		return "", fmt.Errorf("FundChannel() %w", err)
 	}
@@ -451,6 +489,12 @@ func (n *CLightningNode) AddInvoice(amtSat uint64, desc, label string) (payreq s
 
 func (n *CLightningNode) PayInvoice(payreq string) error {
 	_, err := n.Rpc.PayBolt(payreq)
+	return err
+}
+
+func (n *CLightningNode) FeeRate() error {
+	s, err := n.Rpc.FeeRates(glightning.PerKw)
+	fmt.Println(s.Details)
 	return err
 }
 

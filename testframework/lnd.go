@@ -12,9 +12,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/elementsproject/glightning/glightning"
 	"github.com/elementsproject/peerswap/lightning"
 	"github.com/lightningnetwork/lnd/lnrpc"
+	"github.com/lightningnetwork/lnd/lnrpc/routerrpc"
 	"github.com/lightningnetwork/lnd/lnwire"
+	"github.com/lightningnetwork/lnd/routing/route"
 )
 
 func getLndConfig() map[string]string {
@@ -292,9 +295,9 @@ func (n *LndNode) FundWallet(sats uint64, mineBlock bool) (string, error) {
 	return addr.Address, nil
 }
 
-func (n *LndNode) OpenChannel(peer LightningNode, capacity uint64, connect, confirm, waitForChannelActive bool) (string, error) {
+func (n *LndNode) OpenChannel(peer LightningNode, capacity, pushAmt uint64, connect, confirm, waitForChannelActive bool) (string, error) {
 	// fund wallet 10*cap
-	_, err := n.FundWallet(uint64(1.1*float64(capacity)), true)
+	_, err := n.FundWallet(uint64(1.5*float64(capacity)), true)
 	if err != nil {
 		return "", fmt.Errorf("FundWallet() %w", err)
 	}
@@ -318,6 +321,7 @@ func (n *LndNode) OpenChannel(peer LightningNode, capacity uint64, connect, conf
 	stream, err := n.Rpc.OpenChannel(context.Background(), &lnrpc.OpenChannelRequest{
 		NodePubkey:         pk,
 		LocalFundingAmount: int64(capacity),
+		PushSat:            int64(pushAmt),
 	})
 	if err != nil {
 		return "", fmt.Errorf("OpenChannel() %w", err)
@@ -502,6 +506,58 @@ func (n *LndNode) GetLatestInvoice() (payreq string, err error) {
 		return r.Invoices[len(r.Invoices)-1].PaymentRequest, nil
 	}
 	return "", fmt.Errorf("Invioces list is nil")
+}
+
+func (n *LndNode) PrepayProbeSendPay(scid, from, to string, amt glightning.Amount) error {
+	s := lightning.Scid(scid)
+	res, err := n.Rpc.ListChannels(context.Background(), &lnrpc.ListChannelsRequest{})
+	if err != nil {
+		return fmt.Errorf("ListChannels() %w", err)
+	}
+	var outgoingChanId uint64
+	for _, ch := range res.GetChannels() {
+		channelShortId := lnwire.NewShortChanIDFromInt(ch.ChanId)
+		if channelShortId.String() == s.LndStyle() {
+			outgoingChanId = ch.ChanId
+		}
+	}
+	if outgoingChanId == 0 {
+		return fmt.Errorf("could not find a channel with scid: %s", scid)
+	}
+	v, err := route.NewVertexFromStr(to)
+	if err != nil {
+		return err
+	}
+
+	route, err := n.RpcV2.BuildRoute(context.Background(), &routerrpc.BuildRouteRequest{
+		AmtMsat:        int64(amt.MSat()),
+		FinalCltvDelta: 9,
+		OutgoingChanId: outgoingChanId,
+		HopPubkeys:     [][]byte{v[:]},
+	})
+	if err != nil {
+		return err
+	}
+	preimage, err := lightning.GetPreimage()
+	if err != nil {
+		return err
+	}
+	pHash, err := hex.DecodeString(preimage.Hash().String())
+	if err != nil {
+		return err
+	}
+
+	res2, err := n.Rpc.SendToRouteSync(context.Background(), &lnrpc.SendToRouteRequest{
+		PaymentHash: pHash,
+		Route:       route.GetRoute(),
+	})
+	if err != nil {
+		return err
+	}
+	if strings.Contains(res2.PaymentError, "IncorrectOrUnknownPaymentDetails") {
+		return fmt.Errorf("received payment error: %v", res2.PaymentError)
+	}
+	return nil
 }
 
 func (n *LndNode) GetMemoFromPayreq(bolt11 string) (string, error) {

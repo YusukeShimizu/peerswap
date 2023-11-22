@@ -64,6 +64,7 @@ func (d *DaemonProcess) Run() {
 func (d *DaemonProcess) Kill() {
 	if d.isRunning {
 		d.Cmd.Process.Kill()
+		d.isRunning = false
 	}
 }
 

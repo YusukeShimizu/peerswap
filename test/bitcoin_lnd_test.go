@@ -9,9 +9,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/elementsproject/glightning/glightning"
 	"github.com/elementsproject/peerswap/peerswaprpc"
 	"github.com/elementsproject/peerswap/swap"
 	"github.com/elementsproject/peerswap/testframework"
+	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -208,6 +210,9 @@ func Test_LndLnd_Bitcoin_SwapIn(t *testing.T) {
 				Asset:      asset,
 			})
 		}()
+		cs, err := lightningds[0].Rpc.ListChannels(context.Background(), &lnrpc.ListChannelsRequest{})
+		require.NoError(err)
+		t.Logf("cs: %v", cs)
 		preimageClaimTest(t, params)
 	})
 	t.Run("claim_coop", func(t *testing.T) {
@@ -1262,5 +1267,96 @@ func Test_LndLnd_ExcessiveAmount(t *testing.T) {
 			Asset:      asset,
 		})
 		assert.Error(t, err)
+	})
+}
+
+func Test_LndLnd_Stuckchannels(t *testing.T) {
+	IsIntegrationTest(t)
+	t.Parallel()
+
+	t.Run("claim_normal", func(t *testing.T) {
+		t.Parallel()
+		require := require.New(t)
+
+		bitcoind, lightningds, peerswapds, scid := lndlndSetupWithPushAmt(t, 150000, 141260)
+		defer func() {
+
+			pprintFail(
+				tailableProcess{
+					p:     bitcoind.DaemonProcess,
+					lines: 3000,
+				},
+				tailableProcess{
+					p:     lightningds[0].DaemonProcess,
+					lines: 3000,
+				},
+				tailableProcess{
+					p:     lightningds[1].DaemonProcess,
+					lines: 3000,
+				},
+				tailableProcess{
+					p:     peerswapds[0].DaemonProcess,
+					lines: 3000,
+				},
+				tailableProcess{
+					p:     peerswapds[1].DaemonProcess,
+					lines: 3000,
+				},
+			)
+
+		}()
+
+		var channelBalances []uint64
+		var walletBalances []uint64
+		for _, lightningd := range lightningds {
+			b, err := lightningd.GetBtcBalanceSat()
+			require.NoError(err)
+			walletBalances = append(walletBalances, b)
+
+			b, err = lightningd.GetChannelBalanceSat(scid)
+			require.NoError(err)
+			channelBalances = append(channelBalances, b)
+		}
+
+		// lcid, err := lightningds[0].ChanIdFromScid(scid)
+		// if err != nil {
+		// 	t.Fatalf("lightingds[0].ChanIdFromScid() %v", err)
+		// }
+
+		params := &testParams{
+			swapAmt:          channelBalances[0] / 2,
+			scid:             scid,
+			origTakerWallet:  walletBalances[0],
+			origMakerWallet:  walletBalances[1],
+			origTakerBalance: channelBalances[0],
+			origMakerBalance: channelBalances[1],
+			takerNode:        lightningds[0],
+			makerNode:        lightningds[1],
+			takerPeerswap:    peerswapds[0].DaemonProcess,
+			makerPeerswap:    peerswapds[1].DaemonProcess,
+			chainRpc:         bitcoind.RpcProxy,
+			chaind:           bitcoind,
+			confirms:         BitcoinConfirms,
+			swapType:         swap.SWAPTYPE_IN,
+		}
+
+		// Do swap.
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		cs, err := lightningds[0].Rpc.ListChannels(ctx, &lnrpc.ListChannelsRequest{})
+		require.NoError(err)
+		t.Logf("cs: %v", cs)
+		inv, err := lightningds[0].AddInvoice(1, "shift balance", "")
+		require.NoError(err)
+		lightningds[1].Kill()
+		lightningds[1].DaemonProcess.AppendCmdLine([]string{"--max-commit-fee-rate-anchors=10"})
+		require.NoError(lightningds[1].Run(true, true))
+		cs, err = lightningds[1].Rpc.ListChannels(ctx, &lnrpc.ListChannelsRequest{})
+		require.NoError(err)
+		t.Logf("cs: %v", cs)
+		lightningds[1].PrepayProbeSendPay(scid, lightningds[1].Info.IdentityPubkey, lightningds[0].Info.IdentityPubkey, glightning.AmountFromSat(1))
+		err = lightningds[1].SendPay(inv, params.scid)
+		require.NoError(err)
 	})
 }

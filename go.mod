@@ -141,6 +141,7 @@ require (
 require github.com/pelletier/go-toml/v2 v2.0.5
 
 require (
+	github.com/google/uuid v1.4.0
 	github.com/lightningnetwork/lnd/clock v1.1.0 // indirect
 	github.com/lightningnetwork/lnd/healthcheck v1.2.2 // indirect
 	github.com/lightningnetwork/lnd/kvdb v1.3.1 // indirect
