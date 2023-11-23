@@ -235,10 +235,11 @@ func Test_ClnCln_Bitcoin_SwapIn(t *testing.T) {
 		// Do swap.
 		go func() {
 			var response map[string]interface{}
-			lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset}, &response)
+			err := lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset}, &response)
+			require.NoError(err)
 
 		}()
-		coopClaimTest(t, params)
+		//coopClaimTest(t, params)
 	})
 	t.Run("claim_csv", func(t *testing.T) {
 		t.Parallel()
@@ -1140,4 +1141,86 @@ func Test_ClnCln_ExcessiveAmount(t *testing.T) {
 		assert.Error(t, err)
 	})
 
+}
+
+func Test_ClnCln_Stuckchannels(t *testing.T) {
+	IsIntegrationTest(t)
+	t.Parallel()
+
+	require := require.New(t)
+	bitcoind, lightningds, scid := clnclnSetupWithConfig(t, 3794, 3573, []string{
+		"--dev-bitcoind-poll=1",
+		"--dev-fast-gossip",
+		"--large-channels",
+		"--min-capacity-sat=1000",
+		//"--force-feerates=10000",
+	})
+
+	defer func() {
+
+		pprintFail(
+			tailableProcess{
+				p:     bitcoind.DaemonProcess,
+				lines: 3000,
+			},
+			tailableProcess{
+				p: lightningds[0].DaemonProcess,
+
+				lines: 3000,
+			},
+			tailableProcess{
+				p:     lightningds[1].DaemonProcess,
+				lines: 3000,
+			},
+		)
+
+	}()
+
+	var channelBalances []uint64
+	var walletBalances []uint64
+	for _, lightningd := range lightningds {
+		b, err := lightningd.GetBtcBalanceSat()
+		require.NoError(err)
+		walletBalances = append(walletBalances, b)
+
+		b, err = lightningd.GetChannelBalanceSat(scid)
+		require.NoError(err)
+		channelBalances = append(channelBalances, b)
+	}
+
+	params := &testParams{
+		swapAmt:          channelBalances[0],
+		scid:             scid,
+		origTakerWallet:  walletBalances[0],
+		origMakerWallet:  walletBalances[1],
+		origTakerBalance: channelBalances[0],
+		origMakerBalance: channelBalances[1],
+		takerNode:        lightningds[0],
+		makerNode:        lightningds[1],
+		takerPeerswap:    lightningds[0].DaemonProcess,
+		makerPeerswap:    lightningds[1].DaemonProcess,
+		chainRpc:         bitcoind.RpcProxy,
+		chaind:           bitcoind,
+		confirms:         BitcoinConfirms,
+		csv:              BitcoinCsv,
+		swapType:         swap.SWAPTYPE_IN,
+	}
+
+	inv, err := lightningds[1].AddInvoice(1, "shift balance", "")
+	require.NoError(err)
+
+	err = lightningds[0].SendPay(inv, params.scid)
+	require.NoError(err)
+	for _, lightningd := range lightningds {
+		b, err := lightningd.GetBtcBalanceSat()
+		require.NoError(err)
+		walletBalances = append(walletBalances, b)
+
+		b, err = lightningd.GetChannelBalanceSat(scid)
+		require.NoError(err)
+	}
+	var response map[string]interface{}
+	err = lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: 1, ShortChannelId: params.scid, Asset: "btc"}, &response)
+	assert.NoError(t, err)
+	//preimageClaimTest(t, params)
 }

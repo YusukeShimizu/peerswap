@@ -619,6 +619,59 @@ func (cl *ClightningClient) GetPeers() []string {
 	return peerlist
 }
 
+func (cl *ClightningClient) ProbePayment(scid string, amountMsat uint64) (bool, error) {
+	scid = lightning.Scid(scid).ClnStyle()
+	var res ListPeerChannelsResponse
+	err := cl.glightning.Request(ListPeerChannelsRequest{}, &res)
+	if err != nil {
+		return false, fmt.Errorf("ListPeerChannelsRequest() %w", err)
+	}
+	var channel PeerChannel
+	for _, ch := range res.Channels {
+		if ch.ShortChannelId == scid {
+			if err := cl.checkChannel(ch); err != nil {
+				return false, err
+			}
+			channel = ch
+		}
+	}
+
+	route, err := cl.glightning.GetRoute(channel.PeerId, amountMsat, 1, 0, cl.nodeId, 0, nil, 1)
+	if err != nil {
+		return false, fmt.Errorf("GetRoute() %w", err)
+	}
+	preimage, err := lightning.GetPreimage()
+	if err != nil {
+		return false, err
+	}
+	paymentHash := preimage.Hash().String()
+	_, err = cl.glightning.SendPay(
+		route,
+		paymentHash,
+		"",
+		amountMsat,
+		"",
+		"",
+		0,
+	)
+	if err != nil {
+		return false, fmt.Errorf("SendPay() %w", err)
+	}
+	_, err = cl.glightning.WaitSendPay(paymentHash, 0)
+	if err != nil {
+		pe, ok := err.(*glightning.PaymentError)
+		if !ok {
+			return false, fmt.Errorf("WaitSendPay() %w", err)
+		}
+		faiCodeWIRE_INCORRECT_OR_UNKNOWN_PAYMENT_DETAILS := 203
+		if pe.RpcError.Code != faiCodeWIRE_INCORRECT_OR_UNKNOWN_PAYMENT_DETAILS {
+			log.Infof("send pay would be failed. reason:%w", err)
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
 type Glightninglogger struct {
 	plugin *glightning.Plugin
 }
