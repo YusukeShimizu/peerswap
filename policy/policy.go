@@ -86,7 +86,9 @@ type Policy struct {
 	// AllowNewSwaps can be used to disallow any new swaps. This can be useful
 	// when we want to upgrade the node and do not want to allow for any new
 	// swap request from the peer or the node operator.
-	AllowNewSwaps bool `json:"allow_new_swaps" long:"allow_new_swaps" description:"If set to false, disables all swap requests, defaults to true."`
+	AllowNewSwaps      bool `json:"allow_new_swaps" long:"allow_new_swaps" description:"If set to false, disables all swap requests, defaults to true."`
+	SwapInPremiumRate  int64
+	SwapOutPremiumRate int64
 }
 
 func (p *Policy) String() string {
@@ -136,6 +138,22 @@ func (p *Policy) GetMinSwapAmountMsat() uint64 {
 	mu.Lock()
 	defer mu.Unlock()
 	return p.MinSwapAmountMsat
+}
+
+// GetSwapInPremiumRate returns the minimum swap amount in msat that is needed
+// to perform a swap.
+func (p *Policy) GetSwapInPremiumRate() int64 {
+	mu.Lock()
+	defer mu.Unlock()
+	return p.SwapInPremiumRate
+}
+
+// GetSwapInPremiumRate returns the minimum swap amount in msat that is needed
+// to perform a swap.
+func (p *Policy) GetSwapOutPremiumRate() int64 {
+	mu.Lock()
+	defer mu.Unlock()
+	return p.SwapOutPremiumRate
 }
 
 // NewSwapsAllowed returns the boolean value of AllowNewSwaps.
@@ -425,6 +443,8 @@ func DefaultPolicy() *Policy {
 		AcceptAllPeers:     defaultAcceptAllPeers,
 		MinSwapAmountMsat:  defaultMinSwapAmountMsat,
 		AllowNewSwaps:      defaultAllowNewSwaps,
+		SwapInPremiumRate:  100,
+		SwapOutPremiumRate: 100,
 	}
 }
 

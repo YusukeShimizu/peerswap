@@ -205,6 +205,28 @@ func (s *SwapData) GetAmount() uint64 {
 	return 0
 }
 
+func (s *SwapData) GetClaimAmount() uint64 {
+	if s.SwapInRequest != nil {
+		return s.SwapInRequest.Amount
+	}
+	if s.SwapOutRequest != nil {
+		// todo negativeを考慮
+		return s.SwapOutRequest.Amount + uint64(s.SwapOutAgreement.Premium)
+	}
+	return 0
+}
+
+func (s *SwapData) GetOpeningTXAmount() uint64 {
+	if s.SwapInRequest != nil {
+		// todo negativeを考慮
+		return s.SwapInRequest.Amount + +uint64(s.SwapInAgreement.Premium)
+	}
+	if s.SwapOutRequest != nil {
+		return s.SwapOutRequest.Amount
+	}
+	return 0
+}
+
 func (s *SwapData) GetAsset() string {
 	if s.SwapInRequest != nil {
 		return s.SwapInRequest.Asset
@@ -326,7 +348,7 @@ func (s *SwapData) GetOpeningParams() *OpeningParams {
 		TakerPubkey:      s.GetTakerPubkey(),
 		MakerPubkey:      s.GetMakerPubkey(),
 		ClaimPaymentHash: s.GetPaymentHash(),
-		Amount:           s.GetAmount(),
+		Amount:           s.GetOpeningTXAmount(),
 		BlindingKey:      blindingKey,
 	}
 }

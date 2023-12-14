@@ -57,7 +57,7 @@ func getSwapInSenderStates() States {
 			},
 		},
 		State_SwapInSender_BroadcastOpeningTx: {
-			Action: &CreateAndBroadcastOpeningTransaction{},
+			Action: &ValidatePremium{next: &CreateAndBroadcastOpeningTransaction{}},
 			Events: Events{
 				Event_ActionSucceeded: State_SwapInSender_SendTxBroadcastedMessage,
 				Event_ActionFailed:    State_SendCancel,
