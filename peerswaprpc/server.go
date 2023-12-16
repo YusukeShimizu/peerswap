@@ -376,10 +376,12 @@ func (p *PeerswapServer) ListPeers(ctx context.Context, request *ListPeersReques
 			}
 
 			peerSwapPeers = append(peerSwapPeers, &PeerSwapPeer{
-				NodeId:          v.PubKey,
-				SwapsAllowed:    poll.PeerAllowed,
-				SupportedAssets: poll.Assets,
-				Channels:        getPeerSwapChannels(v.PubKey, channelRes.Channels),
+				NodeId:             v.PubKey,
+				SwapsAllowed:       poll.PeerAllowed,
+				SwapInPremiumRate:  poll.SwapInPremiumRate,
+				SwapOutPremiumRate: poll.SwapOutPremiumRate,
+				SupportedAssets:    poll.Assets,
+				Channels:           getPeerSwapChannels(v.PubKey, channelRes.Channels),
 				AsSender: &SwapStats{
 					SwapsOut: SenderSwapsOut,
 					SwapsIn:  SenderSwapsIn,
@@ -571,6 +573,7 @@ func PrettyprintFromServiceSwap(swap *swap.SwapStateMachine) *PrettyPrintSwap {
 		ClaimTxId:       swap.Data.ClaimTxId,
 		CancelMessage:   swap.Data.GetCancelMessage(),
 		LndChanId:       lnd_chan_id,
+		PremiumAmount:   swap.Data.GetPremium(),
 	}
 }
 

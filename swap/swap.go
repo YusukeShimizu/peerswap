@@ -236,6 +236,15 @@ func (s *SwapData) GetAsset() string {
 	}
 	return ""
 }
+func (s *SwapData) GetPremium() int64 {
+	if s.SwapInRequest != nil {
+		return s.SwapInAgreement.Premium
+	}
+	if s.SwapOutRequest != nil {
+		return s.SwapOutAgreement.Premium
+	}
+	return 0
+}
 
 func (s *SwapData) GetInvoiceExpiry() uint64 {
 	var expiry uint64
