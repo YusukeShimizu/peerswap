@@ -76,7 +76,7 @@ var (
 	maxAcceptablePremiumFlag = cli.Uint64Flag{
 		Name:     "max_acceptable_premium",
 		Usage:    "max acceptable premium for a swap",
-		Required: true,
+		Required: false,
 	}
 
 	swapOutCommand = cli.Command{

@@ -26,6 +26,7 @@ type testParams struct {
 	confirms         int
 	csv              int
 	swapType         swap.SwapType
+	premiumLimit     int64
 }
 
 func coopClaimTest(t *testing.T, params *testParams) {
