@@ -205,13 +205,18 @@ type ValidatePremium struct {
 func (v *ValidatePremium) Execute(services *SwapServices, swap *SwapData) EventType {
 	if swap.SwapInAgreement != nil {
 		if swap.SwapInAgreement.Premium > swap.SwapInRequest.AcceptablePremium {
-			return swap.HandleError(fmt.Errorf("unacceptable premium rate: %d", swap.SwapInAgreement.Premium))
+			return swap.HandleError(fmt.Errorf("premium amt too high: %d, limit : %d",
+				swap.SwapInAgreement.Premium, swap.SwapInRequest.AcceptablePremium))
 		}
+		return v.next.Execute(services, swap)
+	} else if swap.SwapOutAgreement != nil {
+		if swap.SwapOutAgreement.Premium > swap.SwapOutRequest.AcceptablePremium {
+			return swap.HandleError(fmt.Errorf("premium amt too high: %d, limit : %d",
+				swap.SwapOutAgreement.Premium, swap.SwapInRequest.AcceptablePremium))
+		}
+		return v.next.Execute(services, swap)
 	}
-	if swap.SwapOutAgreement.Premium > swap.SwapOutRequest.AcceptablePremium {
-		return swap.HandleError(fmt.Errorf("unacceptable premium rate: %d", swap.SwapInAgreement.Premium))
-	}
-	return v.next.Execute(services, swap)
+	return swap.HandleError(fmt.Errorf("unexpected swap data: %v", swap))
 }
 
 type CreateAndBroadcastOpeningTransaction struct{}

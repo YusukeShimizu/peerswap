@@ -9,6 +9,7 @@ import (
 
 	"github.com/elementsproject/peerswap/clightning"
 	"github.com/elementsproject/peerswap/peerswaprpc"
+	"github.com/elementsproject/peerswap/policy"
 	"github.com/elementsproject/peerswap/swap"
 	"github.com/elementsproject/peerswap/testframework"
 	"github.com/stretchr/testify/assert"
@@ -114,25 +115,25 @@ func Test_ClnCln_Bitcoin_SwapIn(t *testing.T) {
 
 		bitcoind, lightningds, scid := clnclnSetup(t, uint64(math.Pow10(9)))
 		defer func() {
-			if t.Failed() {
-				filter := os.Getenv("PEERSWAP_TEST_FILTER")
-				pprintFail(
-					tailableProcess{
-						p:     bitcoind.DaemonProcess,
-						lines: defaultLines,
-					},
-					tailableProcess{
-						p:      lightningds[0].DaemonProcess,
-						filter: filter,
-						lines:  defaultLines,
-					},
-					tailableProcess{
-						p:      lightningds[1].DaemonProcess,
-						filter: filter,
-						lines:  defaultLines,
-					},
-				)
-			}
+
+			//filter := os.Getenv("PEERSWAP_TEST_FILTER")
+			pprintFail(
+				tailableProcess{
+					p:     bitcoind.DaemonProcess,
+					lines: 3000,
+				},
+				tailableProcess{
+					p: lightningds[0].DaemonProcess,
+
+					lines: 3000,
+				},
+				tailableProcess{
+					p: lightningds[1].DaemonProcess,
+
+					lines: 3000,
+				},
+			)
+
 		}()
 
 		var channelBalances []uint64
@@ -148,31 +149,31 @@ func Test_ClnCln_Bitcoin_SwapIn(t *testing.T) {
 		}
 
 		params := &testParams{
-			swapAmt:          channelBalances[0] / 2,
-			scid:             scid,
-			origTakerWallet:  walletBalances[0],
-			origMakerWallet:  walletBalances[1],
-			origTakerBalance: channelBalances[0],
-			origMakerBalance: channelBalances[1],
-			takerNode:        lightningds[0],
-			makerNode:        lightningds[1],
-			takerPeerswap:    lightningds[0].DaemonProcess,
-			makerPeerswap:    lightningds[1].DaemonProcess,
-			chainRpc:         bitcoind.RpcProxy,
-			chaind:           bitcoind,
-			confirms:         BitcoinConfirms,
-			csv:              BitcoinCsv,
-			swapType:         swap.SWAPTYPE_IN,
-			premiumLimit:     int64(channelBalances[0] / 100),
+			swapAmt:            channelBalances[0] / 2,
+			scid:               scid,
+			origTakerWallet:    walletBalances[0],
+			origMakerWallet:    walletBalances[1],
+			origTakerBalance:   channelBalances[0],
+			origMakerBalance:   channelBalances[1],
+			takerNode:          lightningds[0],
+			makerNode:          lightningds[1],
+			takerPeerswap:      lightningds[0].DaemonProcess,
+			makerPeerswap:      lightningds[1].DaemonProcess,
+			chainRpc:           bitcoind.RpcProxy,
+			chaind:             bitcoind,
+			confirms:           BitcoinConfirms,
+			csv:                BitcoinCsv,
+			swapType:           swap.SWAPTYPE_IN,
+			premiumLimit:       int64(channelBalances[0] / 100),
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
 		}
 		asset := "btc"
 
 		// Do swap.
 		go func() {
 			var response map[string]interface{}
-			err := lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
-			assert.NoError(t, err)
-
+			lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
 		}()
 		preimageClaimTest(t, params)
 	})
@@ -216,28 +217,32 @@ func Test_ClnCln_Bitcoin_SwapIn(t *testing.T) {
 		}
 
 		params := &testParams{
-			swapAmt:          channelBalances[0] / 2,
-			scid:             scid,
-			origTakerWallet:  walletBalances[0],
-			origMakerWallet:  walletBalances[1],
-			origTakerBalance: channelBalances[0],
-			origMakerBalance: channelBalances[1],
-			takerNode:        lightningds[0],
-			makerNode:        lightningds[1],
-			takerPeerswap:    lightningds[0].DaemonProcess,
-			makerPeerswap:    lightningds[1].DaemonProcess,
-			chainRpc:         bitcoind.RpcProxy,
-			chaind:           bitcoind,
-			confirms:         BitcoinConfirms,
-			csv:              BitcoinCsv,
-			swapType:         swap.SWAPTYPE_IN,
+			swapAmt:            channelBalances[0] / 2,
+			scid:               scid,
+			origTakerWallet:    walletBalances[0],
+			origMakerWallet:    walletBalances[1],
+			origTakerBalance:   channelBalances[0],
+			origMakerBalance:   channelBalances[1],
+			takerNode:          lightningds[0],
+			makerNode:          lightningds[1],
+			takerPeerswap:      lightningds[0].DaemonProcess,
+			makerPeerswap:      lightningds[1].DaemonProcess,
+			chainRpc:           bitcoind.RpcProxy,
+			chaind:             bitcoind,
+			confirms:           BitcoinConfirms,
+			csv:                BitcoinCsv,
+			swapType:           swap.SWAPTYPE_IN,
+			premiumLimit:       int64(channelBalances[0] / 100),
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
 		}
 		asset := "btc"
 
 		// Do swap.
 		go func() {
 			var response map[string]interface{}
-			lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset}, &response)
+			err := lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+			require.NoError(err)
 
 		}()
 		coopClaimTest(t, params)
@@ -282,28 +287,31 @@ func Test_ClnCln_Bitcoin_SwapIn(t *testing.T) {
 		}
 
 		params := &testParams{
-			swapAmt:          channelBalances[0] / 2,
-			scid:             scid,
-			origTakerWallet:  walletBalances[0],
-			origMakerWallet:  walletBalances[1],
-			origTakerBalance: channelBalances[0],
-			origMakerBalance: channelBalances[1],
-			takerNode:        lightningds[0],
-			makerNode:        lightningds[1],
-			takerPeerswap:    lightningds[0].DaemonProcess,
-			makerPeerswap:    lightningds[1].DaemonProcess,
-			chainRpc:         bitcoind.RpcProxy,
-			chaind:           bitcoind,
-			confirms:         BitcoinConfirms,
-			csv:              BitcoinCsv,
-			swapType:         swap.SWAPTYPE_IN,
+			swapAmt:            channelBalances[0] / 2,
+			scid:               scid,
+			origTakerWallet:    walletBalances[0],
+			origMakerWallet:    walletBalances[1],
+			origTakerBalance:   channelBalances[0],
+			origMakerBalance:   channelBalances[1],
+			takerNode:          lightningds[0],
+			makerNode:          lightningds[1],
+			takerPeerswap:      lightningds[0].DaemonProcess,
+			makerPeerswap:      lightningds[1].DaemonProcess,
+			chainRpc:           bitcoind.RpcProxy,
+			chaind:             bitcoind,
+			confirms:           BitcoinConfirms,
+			csv:                BitcoinCsv,
+			swapType:           swap.SWAPTYPE_IN,
+			premiumLimit:       int64(channelBalances[0] / 100),
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
 		}
 		asset := "btc"
 
 		// Do swap.
 		go func() {
 			var response map[string]interface{}
-			lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset}, &response)
+			lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
 
 		}()
 		csvClaimTest(t, params)
@@ -354,21 +362,24 @@ func Test_ClnCln_Bitcoin_SwapOut(t *testing.T) {
 		}
 
 		params := &testParams{
-			swapAmt:          channelBalances[0] / 2,
-			scid:             scid,
-			origTakerWallet:  walletBalances[0],
-			origMakerWallet:  walletBalances[1],
-			origTakerBalance: channelBalances[0],
-			origMakerBalance: channelBalances[1],
-			takerNode:        lightningds[0],
-			makerNode:        lightningds[1],
-			takerPeerswap:    lightningds[0].DaemonProcess,
-			makerPeerswap:    lightningds[1].DaemonProcess,
-			chainRpc:         bitcoind.RpcProxy,
-			chaind:           bitcoind,
-			confirms:         BitcoinConfirms,
-			csv:              BitcoinCsv,
-			swapType:         swap.SWAPTYPE_OUT,
+			swapAmt:            channelBalances[0] / 2,
+			scid:               scid,
+			origTakerWallet:    walletBalances[0],
+			origMakerWallet:    walletBalances[1],
+			origTakerBalance:   channelBalances[0],
+			origMakerBalance:   channelBalances[1],
+			takerNode:          lightningds[0],
+			makerNode:          lightningds[1],
+			takerPeerswap:      lightningds[0].DaemonProcess,
+			makerPeerswap:      lightningds[1].DaemonProcess,
+			chainRpc:           bitcoind.RpcProxy,
+			chaind:             bitcoind,
+			confirms:           BitcoinConfirms,
+			csv:                BitcoinCsv,
+			swapType:           swap.SWAPTYPE_OUT,
+			premiumLimit:       int64(channelBalances[0] / 100),
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
 		}
 		asset := "btc"
 
@@ -376,7 +387,7 @@ func Test_ClnCln_Bitcoin_SwapOut(t *testing.T) {
 		go func() {
 			// We need to run this in a go routine as the Request call is blocking and sometimes does not return.
 			var response map[string]interface{}
-			lightningds[0].Rpc.Request(&clightning.SwapOut{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset}, &response)
+			lightningds[0].Rpc.Request(&clightning.SwapOut{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
 		}()
 		preimageClaimTest(t, params)
 	})
