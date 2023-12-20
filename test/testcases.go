@@ -76,7 +76,11 @@ func coopClaimTest(t *testing.T, params *testParams) {
 	err = testframework.WaitFor(func() bool {
 		setTakerFunds, err = params.takerNode.GetChannelBalanceSat(params.scid)
 		require.NoError(err)
-		return setTakerFunds == params.swapAmt-1
+		expectTakerFunds := params.swapAmt - 1
+		if params.swapType == swap.SWAPTYPE_OUT {
+			expectTakerFunds = uint64(int64(expectTakerFunds) + params.premium())
+		}
+		return setTakerFunds == expectTakerFunds
 	}, testframework.TIMEOUT)
 	require.NoError(err)
 

@@ -86,9 +86,9 @@ type Policy struct {
 	// AllowNewSwaps can be used to disallow any new swaps. This can be useful
 	// when we want to upgrade the node and do not want to allow for any new
 	// swap request from the peer or the node operator.
-	AllowNewSwaps      bool `json:"allow_new_swaps" long:"allow_new_swaps" description:"If set to false, disables all swap requests, defaults to true."`
-	SwapInPremiumRate  int64
-	SwapOutPremiumRate int64
+	AllowNewSwaps      bool  `json:"allow_new_swaps" long:"allow_new_swaps" description:"If set to false, disables all swap requests, defaults to true."`
+	SwapInPremiumRate  int64 `json:"swap_in_premium_rate" long:"swap_in_premium_rate" description:"The premium rate for swaps in"`
+	SwapOutPremiumRate int64 `json:"swap_out_premium_rate" long:"swap_out_premium_rate" description:"The premium rate for swaps out"`
 }
 
 func (p *Policy) String() string {
