@@ -87,7 +87,10 @@ func Test_OnlyOneActiveSwapPerChannelCln(t *testing.T) {
 		go func(n int) {
 			defer wg.Done()
 			var response map[string]interface{}
-			err := lightningds[0].Rpc.Request(&clightning.SwapOut{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset}, &response)
+			err := lightningds[0].Rpc.Request(&clightning.SwapOut{
+				SatAmt:         params.swapAmt,
+				ShortChannelId: params.scid,
+				Asset:          asset}, &response)
 			t.Logf("[%d] Response: %v", n, response)
 			if err != nil {
 				t.Logf("[%d] Err: %s", n, err.Error())
@@ -165,15 +168,19 @@ func Test_ClnCln_Bitcoin_SwapIn(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
 		// Do swap.
 		go func() {
 			var response map[string]interface{}
-			lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+			lightningds[1].Rpc.Request(&clightning.SwapIn{
+				SatAmt:         params.swapAmt,
+				ShortChannelId: params.scid,
+				Asset:          asset,
+				PremiumLimit:   params.premiumLimit}, &response)
 		}()
 		preimageClaimTest(t, params)
 	})
@@ -233,15 +240,19 @@ func Test_ClnCln_Bitcoin_SwapIn(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
 		// Do swap.
 		go func() {
 			var response map[string]interface{}
-			err := lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+			err := lightningds[1].Rpc.Request(&clightning.SwapIn{
+				SatAmt:         params.swapAmt,
+				ShortChannelId: params.scid,
+				Asset:          asset,
+				PremiumLimit:   params.premiumLimit}, &response)
 			require.NoError(err)
 
 		}()
@@ -303,15 +314,19 @@ func Test_ClnCln_Bitcoin_SwapIn(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
 		// Do swap.
 		go func() {
 			var response map[string]interface{}
-			lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+			lightningds[1].Rpc.Request(&clightning.SwapIn{
+				SatAmt:         params.swapAmt,
+				ShortChannelId: params.scid,
+				Asset:          asset,
+				PremiumLimit:   params.premiumLimit}, &response)
 
 		}()
 		csvClaimTest(t, params)
@@ -378,8 +393,8 @@ func Test_ClnCln_Bitcoin_SwapOut(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_OUT,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -387,7 +402,11 @@ func Test_ClnCln_Bitcoin_SwapOut(t *testing.T) {
 		go func() {
 			// We need to run this in a go routine as the Request call is blocking and sometimes does not return.
 			var response map[string]interface{}
-			lightningds[0].Rpc.Request(&clightning.SwapOut{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+			lightningds[0].Rpc.Request(&clightning.SwapOut{
+				SatAmt:         params.swapAmt,
+				ShortChannelId: params.scid,
+				Asset:          asset,
+				PremiumLimit:   params.premiumLimit}, &response)
 		}()
 		preimageClaimTest(t, params)
 	})
@@ -447,8 +466,8 @@ func Test_ClnCln_Bitcoin_SwapOut(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_OUT,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -456,7 +475,11 @@ func Test_ClnCln_Bitcoin_SwapOut(t *testing.T) {
 		go func() {
 			// We need to run this in a go routine as the Request call is blocking and sometimes does not return.
 			var response map[string]interface{}
-			lightningds[0].Rpc.Request(&clightning.SwapOut{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+			lightningds[0].Rpc.Request(&clightning.SwapOut{
+				SatAmt:         params.swapAmt,
+				ShortChannelId: params.scid,
+				Asset:          asset,
+				PremiumLimit:   params.premiumLimit}, &response)
 		}()
 		coopClaimTest(t, params)
 	})
@@ -516,8 +539,8 @@ func Test_ClnCln_Bitcoin_SwapOut(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_OUT,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -525,7 +548,11 @@ func Test_ClnCln_Bitcoin_SwapOut(t *testing.T) {
 		go func() {
 			// We need to run this in a go routine as the Request call is blocking and sometimes does not return.
 			var response map[string]interface{}
-			lightningds[0].Rpc.Request(&clightning.SwapOut{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+			lightningds[0].Rpc.Request(&clightning.SwapOut{
+				SatAmt:         params.swapAmt,
+				ShortChannelId: params.scid,
+				Asset:          asset,
+				PremiumLimit:   params.premiumLimit}, &response)
 		}()
 		csvClaimTest(t, params)
 	})
@@ -594,8 +621,8 @@ func Test_ClnLnd_Bitcoin_SwapIn(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -603,7 +630,11 @@ func Test_ClnLnd_Bitcoin_SwapIn(t *testing.T) {
 		go func() {
 			// We need to run this in a go routine as the Request call is blocking and sometimes does not return.
 			var response map[string]interface{}
-			lightningds[1].(*testframework.CLightningNode).Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+			lightningds[1].(*testframework.CLightningNode).Rpc.Request(&clightning.SwapIn{
+				SatAmt:         params.swapAmt,
+				ShortChannelId: params.scid,
+				Asset:          asset,
+				PremiumLimit:   params.premiumLimit}, &response)
 		}()
 		preimageClaimTest(t, params)
 	})
@@ -666,8 +697,8 @@ func Test_ClnLnd_Bitcoin_SwapIn(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -675,7 +706,11 @@ func Test_ClnLnd_Bitcoin_SwapIn(t *testing.T) {
 		go func() {
 			// We need to run this in a go routine as the Request call is blocking and sometimes does not return.
 			var response map[string]interface{}
-			lightningds[1].(*testframework.CLightningNode).Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+			lightningds[1].(*testframework.CLightningNode).Rpc.Request(&clightning.SwapIn{
+				SatAmt:         params.swapAmt,
+				ShortChannelId: params.scid,
+				Asset:          asset,
+				PremiumLimit:   params.premiumLimit}, &response)
 		}()
 		coopClaimTest(t, params)
 	})
@@ -738,8 +773,8 @@ func Test_ClnLnd_Bitcoin_SwapIn(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -747,7 +782,11 @@ func Test_ClnLnd_Bitcoin_SwapIn(t *testing.T) {
 		go func() {
 			// We need to run this in a go routine as the Request call is blocking and sometimes does not return.
 			var response map[string]interface{}
-			lightningds[1].(*testframework.CLightningNode).Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+			lightningds[1].(*testframework.CLightningNode).Rpc.Request(&clightning.SwapIn{
+				SatAmt:         params.swapAmt,
+				ShortChannelId: params.scid,
+				Asset:          asset,
+				PremiumLimit:   params.premiumLimit}, &response)
 		}()
 		csvClaimTest(t, params)
 	})
@@ -816,8 +855,8 @@ func Test_ClnLnd_Bitcoin_SwapOut(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_OUT,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -825,7 +864,11 @@ func Test_ClnLnd_Bitcoin_SwapOut(t *testing.T) {
 		go func() {
 			// We need to run this in a go routine as the Request call is blocking and sometimes does not return.
 			var response map[string]interface{}
-			lightningds[0].(*testframework.CLightningNode).Rpc.Request(&clightning.SwapOut{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+			lightningds[0].(*testframework.CLightningNode).Rpc.Request(&clightning.SwapOut{
+				SatAmt:         params.swapAmt,
+				ShortChannelId: params.scid,
+				Asset:          asset,
+				PremiumLimit:   params.premiumLimit}, &response)
 		}()
 		preimageClaimTest(t, params)
 	})
@@ -888,8 +931,8 @@ func Test_ClnLnd_Bitcoin_SwapOut(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_OUT,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -897,7 +940,11 @@ func Test_ClnLnd_Bitcoin_SwapOut(t *testing.T) {
 		go func() {
 			// We need to run this in a go routine as the Request call is blocking and sometimes does not return.
 			var response map[string]interface{}
-			lightningds[0].(*testframework.CLightningNode).Rpc.Request(&clightning.SwapOut{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+			lightningds[0].(*testframework.CLightningNode).Rpc.Request(&clightning.SwapOut{
+				SatAmt:         params.swapAmt,
+				ShortChannelId: params.scid,
+				Asset:          asset,
+				PremiumLimit:   params.premiumLimit}, &response)
 		}()
 		coopClaimTest(t, params)
 	})
@@ -960,8 +1007,8 @@ func Test_ClnLnd_Bitcoin_SwapOut(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_OUT,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -969,7 +1016,11 @@ func Test_ClnLnd_Bitcoin_SwapOut(t *testing.T) {
 		go func() {
 			// We need to run this in a go routine as the Request call is blocking and sometimes does not return.
 			var response map[string]interface{}
-			lightningds[0].(*testframework.CLightningNode).Rpc.Request(&clightning.SwapOut{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+			lightningds[0].(*testframework.CLightningNode).Rpc.Request(&clightning.SwapOut{
+				SatAmt:         params.swapAmt,
+				ShortChannelId: params.scid,
+				Asset:          asset,
+				PremiumLimit:   params.premiumLimit}, &response)
 		}()
 		csvClaimTest(t, params)
 	})
@@ -1034,18 +1085,22 @@ func Test_ClnCln_ExcessiveAmount(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_OUT,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
 		// Swap out should fail as the swap_amt is to high.
 		var response map[string]interface{}
-		err := lightningds[0].Rpc.Request(&clightning.SwapOut{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+		err := lightningds[0].Rpc.Request(&clightning.SwapOut{
+			SatAmt:         params.swapAmt,
+			ShortChannelId: params.scid,
+			Asset:          asset,
+			PremiumLimit:   params.premiumLimit}, &response)
 		assert.Error(t, err)
 
 		// Swap in should fail as the swap_amt is to high.
-		err = lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+		err = lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, PremiumLimit: params.premiumLimit}, &response)
 		assert.Error(t, err)
 	})
 	t.Run("maxhtlc_swapout", func(t *testing.T) {
@@ -1104,8 +1159,8 @@ func Test_ClnCln_ExcessiveAmount(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -1113,7 +1168,11 @@ func Test_ClnCln_ExcessiveAmount(t *testing.T) {
 		assert.NoError(t, err)
 		// Swap out should fail as the swap_amt is to high.
 		var response map[string]interface{}
-		err = lightningds[0].Rpc.Request(&clightning.SwapOut{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+		err = lightningds[0].Rpc.Request(&clightning.SwapOut{
+			SatAmt:         params.swapAmt,
+			ShortChannelId: params.scid,
+			Asset:          asset,
+			PremiumLimit:   params.premiumLimit}, &response)
 		assert.Error(t, err)
 	})
 	t.Run("maxhtlc_swapin", func(t *testing.T) {
@@ -1172,8 +1231,8 @@ func Test_ClnCln_ExcessiveAmount(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -1181,7 +1240,11 @@ func Test_ClnCln_ExcessiveAmount(t *testing.T) {
 		assert.NoError(t, err)
 		// Swap in should fail as the swap_amt is to high.
 		var response map[string]interface{}
-		err = lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+		err = lightningds[1].Rpc.Request(&clightning.SwapIn{
+			SatAmt:         params.swapAmt,
+			ShortChannelId: params.scid,
+			Asset:          asset,
+			PremiumLimit:   params.premiumLimit}, &response)
 		assert.Error(t, err)
 	})
 
@@ -1191,7 +1254,7 @@ func Test_Cln_Premium(t *testing.T) {
 	IsIntegrationTest(t)
 	t.Parallel()
 
-	t.Run("negative", func(t *testing.T) {
+	t.Run("negative_swapin", func(t *testing.T) {
 		t.Parallel()
 		require := require.New(t)
 
@@ -1200,7 +1263,7 @@ func Test_Cln_Premium(t *testing.T) {
 			"--dev-fast-gossip",
 			"--large-channels",
 		},
-			[]byte("accept_all_peers=1\nswap_in_premium_rate=-10000\n"),
+			[]byte("accept_all_peers=1\nswap_in_premium_rate_ppm=-10000\n"),
 		)
 		defer func() {
 			if t.Failed() {
@@ -1254,15 +1317,96 @@ func Test_Cln_Premium(t *testing.T) {
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
 			swapInPremiumRate:  -10000,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
 		var response map[string]interface{}
-		err := lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+		err := lightningds[1].Rpc.Request(&clightning.SwapIn{
+			SatAmt:         params.swapAmt,
+			ShortChannelId: params.scid,
+			Asset:          asset,
+			PremiumLimit:   params.premiumLimit}, &response)
 		assert.NoError(t, err)
 
 		preimageClaimTest(t, params)
+	})
+
+	t.Run("negative_swapout", func(t *testing.T) {
+		t.Parallel()
+		require := require.New(t)
+
+		bitcoind, lightningds, scid := clnclnSetupWithConfig(t, uint64(math.Pow10(9)), []string{
+			"--dev-bitcoind-poll=1",
+			"--dev-fast-gossip",
+			"--large-channels",
+		},
+			[]byte("accept_all_peers=1\nswap_out_premium_rate_ppm=-10000\n"),
+		)
+		defer func() {
+			if t.Failed() {
+				filter := os.Getenv("PEERSWAP_TEST_FILTER")
+				pprintFail(
+					tailableProcess{
+						p:     bitcoind.DaemonProcess,
+						lines: defaultLines,
+					},
+					tailableProcess{
+						p:      lightningds[0].DaemonProcess,
+						filter: filter,
+						lines:  defaultLines,
+					},
+					tailableProcess{
+						p:      lightningds[1].DaemonProcess,
+						filter: filter,
+						lines:  defaultLines,
+					},
+				)
+			}
+		}()
+
+		var channelBalances []uint64
+		var walletBalances []uint64
+		for _, lightningd := range lightningds {
+			b, err := lightningd.GetBtcBalanceSat()
+			require.NoError(err)
+			walletBalances = append(walletBalances, b)
+
+			b, err = lightningd.GetChannelBalanceSat(scid)
+			require.NoError(err)
+			channelBalances = append(channelBalances, b)
+		}
+
+		params := &testParams{
+			swapAmt:            channelBalances[0] / 2,
+			scid:               scid,
+			origTakerWallet:    walletBalances[0],
+			origMakerWallet:    walletBalances[1],
+			origTakerBalance:   channelBalances[0],
+			origMakerBalance:   channelBalances[1],
+			takerNode:          lightningds[0],
+			makerNode:          lightningds[1],
+			takerPeerswap:      lightningds[0].DaemonProcess,
+			makerPeerswap:      lightningds[1].DaemonProcess,
+			chainRpc:           bitcoind.RpcProxy,
+			chaind:             bitcoind,
+			confirms:           BitcoinConfirms,
+			csv:                BitcoinCsv,
+			swapType:           swap.SWAPTYPE_OUT,
+			premiumLimit:       int64(channelBalances[0] / 100),
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: -10000,
+		}
+		asset := "btc"
+
+		// Swap out should fail as the premium is to high.
+		var response map[string]interface{}
+		err := lightningds[0].Rpc.Request(&clightning.SwapOut{
+			SatAmt:         params.swapAmt,
+			ShortChannelId: params.scid,
+			Asset:          asset,
+			PremiumLimit:   params.premiumLimit}, &response)
+		assert.Error(t, err)
 	})
 
 	t.Run("exceed_limit", func(t *testing.T) {
@@ -1321,14 +1465,18 @@ func Test_Cln_Premium(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       1,
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
 		// Swap in should fail as the premium is to high.
 		var response map[string]interface{}
-		err := lightningds[1].Rpc.Request(&clightning.SwapIn{SatAmt: params.swapAmt, ShortChannelId: params.scid, Asset: asset, AcceptablePremium: params.premiumLimit}, &response)
+		err := lightningds[1].Rpc.Request(&clightning.SwapIn{
+			SatAmt:         params.swapAmt,
+			ShortChannelId: params.scid,
+			Asset:          asset,
+			PremiumLimit:   params.premiumLimit}, &response)
 		assert.Error(t, err)
 	})
 

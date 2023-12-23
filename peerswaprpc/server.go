@@ -144,7 +144,7 @@ func (p *PeerswapServer) SwapOut(ctx context.Context, request *SwapOutRequest) (
 		return nil, fmt.Errorf("peer is not connected")
 	}
 
-	swapOut, err := p.swaps.SwapOut(peerId, request.Asset, shortId.String(), pk, request.SwapAmount, request.GetAcceptablePremium())
+	swapOut, err := p.swaps.SwapOut(peerId, request.Asset, shortId.String(), pk, request.SwapAmount, request.GetPremiumLimit())
 	if err != nil {
 		return nil, err
 	}
@@ -268,7 +268,7 @@ func (p *PeerswapServer) SwapIn(ctx context.Context, request *SwapInRequest) (*S
 		return nil, fmt.Errorf("peer is not connected")
 	}
 
-	swapIn, err := p.swaps.SwapIn(peerId, request.Asset, shortId.String(), pk, request.SwapAmount, request.GetAcceptablePremium())
+	swapIn, err := p.swaps.SwapIn(peerId, request.Asset, shortId.String(), pk, request.SwapAmount, request.GetPremiumLimit())
 	if err != nil {
 		return nil, err
 	}
@@ -376,12 +376,12 @@ func (p *PeerswapServer) ListPeers(ctx context.Context, request *ListPeersReques
 			}
 
 			peerSwapPeers = append(peerSwapPeers, &PeerSwapPeer{
-				NodeId:             v.PubKey,
-				SwapsAllowed:       poll.PeerAllowed,
-				SwapInPremiumRate:  poll.SwapInPremiumRate,
-				SwapOutPremiumRate: poll.SwapOutPremiumRate,
-				SupportedAssets:    poll.Assets,
-				Channels:           getPeerSwapChannels(v.PubKey, channelRes.Channels),
+				NodeId:                v.PubKey,
+				SwapsAllowed:          poll.PeerAllowed,
+				SwapInPremiumRatePpm:  poll.SwapInPremiumRatePPM,
+				SwapOutPremiumRatePpm: poll.SwapOutPremiumRatePPM,
+				SupportedAssets:       poll.Assets,
+				Channels:              getPeerSwapChannels(v.PubKey, channelRes.Channels),
 				AsSender: &SwapStats{
 					SwapsOut: SenderSwapsOut,
 					SwapsIn:  SenderSwapsIn,

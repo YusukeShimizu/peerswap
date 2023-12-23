@@ -38,8 +38,8 @@ type PeerGetter interface {
 
 type Policy interface {
 	IsPeerAllowed(peerId string) bool
-	GetSwapInPremiumRate() int64
-	GetSwapOutPremiumRate() int64
+	GetSwapInPremiumRatePPM() int64
+	GetSwapOutPremiumRatePPM() int64
 }
 
 type Store interface {
@@ -49,12 +49,12 @@ type Store interface {
 }
 
 type PollInfo struct {
-	ProtocolVersion    uint64   `json:"version"`
-	Assets             []string `json:"assets"`
-	SwapInPremiumRate  int64    `json:"swap_in_premium_rate"`
-	SwapOutPremiumRate int64    `json:"swap_out_premium_rate"`
-	PeerAllowed        bool
-	LastSeen           time.Time
+	ProtocolVersion       uint64   `json:"version"`
+	Assets                []string `json:"assets"`
+	SwapInPremiumRatePPM  int64    `json:"swap_in_premium_rate_ppm"`
+	SwapOutPremiumRatePPM int64    `json:"swap_out_premium_rate_ppm"`
+	PeerAllowed           bool
+	LastSeen              time.Time
 }
 type Service struct {
 	sync.RWMutex
@@ -122,11 +122,11 @@ func (s *Service) Stop() {
 // Poll sends the POLL message to a single peer.
 func (s *Service) Poll(peer string) {
 	poll := PollMessage{
-		Version:            swap.PEERSWAP_PROTOCOL_VERSION,
-		Assets:             s.assets,
-		PeerAllowed:        s.policy.IsPeerAllowed(peer),
-		SwapInPremiumRate:  s.policy.GetSwapInPremiumRate(),
-		SwapOutPremiumRate: s.policy.GetSwapOutPremiumRate(),
+		Version:               swap.PEERSWAP_PROTOCOL_VERSION,
+		Assets:                s.assets,
+		PeerAllowed:           s.policy.IsPeerAllowed(peer),
+		SwapInPremiumRatePPM:  s.policy.GetSwapInPremiumRatePPM(),
+		SwapOutPremiumRatePPM: s.policy.GetSwapOutPremiumRatePPM(),
 	}
 
 	msg, err := json.Marshal(poll)
@@ -148,11 +148,11 @@ func (s *Service) PollAllPeers() {
 // single peer.
 func (s *Service) RequestPoll(peer string) {
 	request := RequestPollMessage{
-		Version:            swap.PEERSWAP_PROTOCOL_VERSION,
-		Assets:             s.assets,
-		PeerAllowed:        s.policy.IsPeerAllowed(peer),
-		SwapInPremiumRate:  s.policy.GetSwapInPremiumRate(),
-		SwapOutPremiumRate: s.policy.GetSwapOutPremiumRate(),
+		Version:               swap.PEERSWAP_PROTOCOL_VERSION,
+		Assets:                s.assets,
+		PeerAllowed:           s.policy.IsPeerAllowed(peer),
+		SwapInPremiumRatePPM:  s.policy.GetSwapInPremiumRatePPM(),
+		SwapOutPremiumRatePPM: s.policy.GetSwapOutPremiumRatePPM(),
 	}
 
 	msg, err := json.Marshal(request)
@@ -189,12 +189,12 @@ func (s *Service) MessageHandler(peerId string, msgType string, payload []byte) 
 			return err
 		}
 		s.store.Update(peerId, PollInfo{
-			ProtocolVersion:    msg.Version,
-			Assets:             msg.Assets,
-			PeerAllowed:        msg.PeerAllowed,
-			SwapInPremiumRate:  msg.SwapInPremiumRate,
-			SwapOutPremiumRate: msg.SwapOutPremiumRate,
-			LastSeen:           time.Now(),
+			ProtocolVersion:       msg.Version,
+			Assets:                msg.Assets,
+			PeerAllowed:           msg.PeerAllowed,
+			SwapInPremiumRatePPM:  msg.SwapInPremiumRatePPM,
+			SwapOutPremiumRatePPM: msg.SwapOutPremiumRatePPM,
+			LastSeen:              time.Now(),
 		})
 		if ti, ok := s.tmpStore[peerId]; ok {
 			if ti == string(payload) {
@@ -215,12 +215,12 @@ func (s *Service) MessageHandler(peerId string, msgType string, payload []byte) 
 			return err
 		}
 		s.store.Update(peerId, PollInfo{
-			ProtocolVersion:    msg.Version,
-			Assets:             msg.Assets,
-			PeerAllowed:        msg.PeerAllowed,
-			SwapInPremiumRate:  msg.SwapInPremiumRate,
-			SwapOutPremiumRate: msg.SwapOutPremiumRate,
-			LastSeen:           time.Now(),
+			ProtocolVersion:       msg.Version,
+			Assets:                msg.Assets,
+			PeerAllowed:           msg.PeerAllowed,
+			SwapInPremiumRatePPM:  msg.SwapInPremiumRatePPM,
+			SwapOutPremiumRatePPM: msg.SwapOutPremiumRatePPM,
+			LastSeen:              time.Now(),
 		})
 		// Send a poll on request
 		s.Poll(peerId)

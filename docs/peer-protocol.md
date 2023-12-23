@@ -316,7 +316,7 @@ The sending node (swap [maker](#maker)/[responder](#responder)):
 * SHOULD use a fresh random private key to generate the `pubkey`.
 * MUST set a 33 byte sized `pubkey` for the taker node to build the swap bitcoin script for verification of the [`opening transaction`](#opening-transaction).
 * MUST set `payreq` to a valid [BOLT#11](#https://github.com/Lightning/bolts/blob/master/11-payment-encoding.md) invoice
-* SHOULD set the `amount` of the invoice to the fee of the to be created [`opening_transaction`](#opening-transaction) and a possible [`claim_transaction`](#claim-transaction).
+* SHOULD set the `amount` of the invoice to the fee of the to be created [`opening_transaction`](#opening-transaction).
 * SHOULD resend the message periodically until one of the following is true:
   * fee invoice with `payreq` has been paid.
   * fee invoice with `payreq` expired, in this case MUST [fail the swap](#failing-a-swap).

@@ -210,19 +210,17 @@ func (s *SwapData) GetClaimAmount() uint64 {
 		return s.SwapInRequest.Amount
 	}
 	if s.SwapOutRequest != nil {
-		// todo negativeを考慮
-		return s.SwapOutRequest.Amount + uint64(s.SwapOutAgreement.Premium)
+		return uint64(int64(s.SwapOutRequest.Amount) + s.SwapOutAgreement.Premium)
 	}
 	return 0
 }
 
 func (s *SwapData) GetOpeningTXAmount() uint64 {
 	if s.SwapInRequest != nil {
-		// todo negativeを考慮
-		return s.SwapInRequest.Amount + +uint64(s.SwapInAgreement.Premium)
+		return uint64(int64(s.SwapInRequest.Amount) + s.SwapInAgreement.Premium)
 	}
 	if s.SwapOutRequest != nil {
-		return s.SwapOutRequest.Amount
+		return s.SwapInRequest.Amount
 	}
 	return 0
 }

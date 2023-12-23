@@ -600,11 +600,11 @@
           "type": "string",
           "format": "uint64"
         },
-        "swapInPremiumRate": {
+        "swapInPremiumRatePpm": {
           "type": "string",
           "format": "int64"
         },
-        "swapOutPremiumRate": {
+        "swapOutPremiumRatePpm": {
           "type": "string",
           "format": "int64"
         }
@@ -789,7 +789,7 @@
         "force": {
           "type": "boolean"
         },
-        "acceptablePremium": {
+        "premiumLimit": {
           "type": "string",
           "format": "int64"
         }
@@ -812,7 +812,7 @@
         "force": {
           "type": "boolean"
         },
-        "acceptablePremium": {
+        "premiumLimit": {
           "type": "string",
           "format": "int64"
         }

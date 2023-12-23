@@ -147,7 +147,7 @@ func (s *SwapInReceiverInitAction) Execute(services *SwapServices, swap *SwapDat
 		ProtocolVersion: PEERSWAP_PROTOCOL_VERSION,
 		SwapId:          swap.GetId(),
 		Pubkey:          hex.EncodeToString(swap.GetPrivkey().PubKey().SerializeCompressed()),
-		Premium:         ComputePremium(swap.GetAmount(), services.policy.GetSwapInPremiumRate()),
+		Premium:         ComputePremium(swap.GetAmount(), services.policy.GetSwapInPremiumRatePPM()),
 	}
 	swap.SwapInAgreement = agreementMessage
 
@@ -198,21 +198,21 @@ func (s *ClaimSwapTransactionWithPreimageAction) Execute(services *SwapServices,
 	return Event_ActionSucceeded
 }
 
-type ValidatePremium struct {
+type CheckPremiumAmount struct {
 	next Action
 }
 
-func (v *ValidatePremium) Execute(services *SwapServices, swap *SwapData) EventType {
+func (v *CheckPremiumAmount) Execute(services *SwapServices, swap *SwapData) EventType {
 	if swap.SwapInAgreement != nil {
-		if swap.SwapInAgreement.Premium > swap.SwapInRequest.AcceptablePremium {
+		if swap.SwapInAgreement.Premium > swap.SwapInRequest.PremiumLimit {
 			return swap.HandleError(fmt.Errorf("premium amt too high: %d, limit : %d",
-				swap.SwapInAgreement.Premium, swap.SwapInRequest.AcceptablePremium))
+				swap.SwapInAgreement.Premium, swap.SwapInRequest.PremiumLimit))
 		}
 		return v.next.Execute(services, swap)
 	} else if swap.SwapOutAgreement != nil {
-		if swap.SwapOutAgreement.Premium > swap.SwapOutRequest.AcceptablePremium {
+		if swap.SwapOutAgreement.Premium > swap.SwapOutRequest.PremiumLimit {
 			return swap.HandleError(fmt.Errorf("premium amt too high: %d, limit : %d",
-				swap.SwapOutAgreement.Premium, swap.SwapInRequest.AcceptablePremium))
+				swap.SwapOutAgreement.Premium, swap.SwapInRequest.PremiumLimit))
 		}
 		return v.next.Execute(services, swap)
 	}
@@ -423,7 +423,7 @@ func (c *CreateSwapOutFromRequestAction) Execute(services *SwapServices, swap *S
 		SwapId:          swap.GetId(),
 		Pubkey:          hex.EncodeToString(swap.GetPrivkey().PubKey().SerializeCompressed()),
 		Payreq:          feeInvoice,
-		Premium:         ComputePremium(swap.GetAmount(), services.policy.GetSwapOutPremiumRate()),
+		Premium:         ComputePremium(swap.GetAmount(), services.policy.GetSwapOutPremiumRatePPM()),
 	}
 	swap.SwapOutAgreement = message
 

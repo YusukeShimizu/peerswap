@@ -43,9 +43,9 @@ type SwapInRequestMessage struct {
 	// with x as separator, e.g. 539268x845x1.
 	Scid string `json:"scid"`
 	// Amount is The amount in Sats that is asked for.
-	Amount            uint64 `json:"amount"`
-	Pubkey            string `json:"pubkey"`
-	AcceptablePremium int64  `json:"acceptable_premium"`
+	Amount       uint64 `json:"amount"`
+	Pubkey       string `json:"pubkey"`
+	PremiumLimit int64  `json:"acceptable_premium"`
 }
 
 func (s SwapInRequestMessage) MessageType() messages.MessageType {
@@ -217,8 +217,8 @@ type SwapOutRequestMessage struct {
 	Amount uint64 `json:"amount"`
 	// Pubkey is a 33 byte compressed public key used for the spending paths in
 	// the opening_transaction.
-	Pubkey            string `json:"pubkey"`
-	AcceptablePremium int64  `json:"acceptable_premium"`
+	Pubkey       string `json:"pubkey"`
+	PremiumLimit int64  `json:"acceptable_premium"`
 }
 
 func (s SwapOutRequestMessage) Validate(swap *SwapData) error {

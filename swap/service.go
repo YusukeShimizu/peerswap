@@ -365,7 +365,7 @@ func (s *SwapService) OnCsvPassed(swapId string) error {
 
 // todo move wallet and chain / channel validation logic here
 // SwapOut starts a new swap out process
-func (s *SwapService) SwapOut(peer string, chain string, channelId string, initiator string, amtSat uint64, acceptablePremium int64) (*SwapStateMachine, error) {
+func (s *SwapService) SwapOut(peer string, chain string, channelId string, initiator string, amtSat uint64, PremiumLimit int64) (*SwapStateMachine, error) {
 	if !s.swapServices.policy.NewSwapsAllowed() {
 		return nil, fmt.Errorf("swaps are disabled")
 	}
@@ -409,14 +409,14 @@ func (s *SwapService) SwapOut(peer string, chain string, channelId string, initi
 	}
 
 	request := &SwapOutRequestMessage{
-		ProtocolVersion:   PEERSWAP_PROTOCOL_VERSION,
-		SwapId:            swap.SwapId,
-		Asset:             elementsAsset,
-		Network:           bitcoinNetwork,
-		Scid:              channelId,
-		Amount:            amtSat,
-		Pubkey:            hex.EncodeToString(swap.Data.GetPrivkey().PubKey().SerializeCompressed()),
-		AcceptablePremium: acceptablePremium,
+		ProtocolVersion: PEERSWAP_PROTOCOL_VERSION,
+		SwapId:          swap.SwapId,
+		Asset:           elementsAsset,
+		Network:         bitcoinNetwork,
+		Scid:            channelId,
+		Amount:          amtSat,
+		Pubkey:          hex.EncodeToString(swap.Data.GetPrivkey().PubKey().SerializeCompressed()),
+		PremiumLimit:    PremiumLimit,
 	}
 
 	done, err := swap.SendEvent(Event_OnSwapOutStarted, request)
@@ -432,7 +432,7 @@ func (s *SwapService) SwapOut(peer string, chain string, channelId string, initi
 
 // todo check prerequisites
 // SwapIn starts a new swap in process
-func (s *SwapService) SwapIn(peer string, chain string, channelId string, initiator string, amtSat uint64, acceptablePremium int64) (*SwapStateMachine, error) {
+func (s *SwapService) SwapIn(peer string, chain string, channelId string, initiator string, amtSat uint64, PremiumLimit int64) (*SwapStateMachine, error) {
 	if !s.swapServices.policy.NewSwapsAllowed() {
 		return nil, fmt.Errorf("swaps are disabled")
 	}
@@ -475,14 +475,14 @@ func (s *SwapService) SwapIn(peer string, chain string, channelId string, initia
 	}
 
 	request := &SwapInRequestMessage{
-		ProtocolVersion:   PEERSWAP_PROTOCOL_VERSION,
-		SwapId:            swap.SwapId,
-		Asset:             elementsAsset,
-		Network:           bitcoinNetwork,
-		Scid:              channelId,
-		Amount:            amtSat,
-		Pubkey:            hex.EncodeToString(swap.Data.GetPrivkey().PubKey().SerializeCompressed()),
-		AcceptablePremium: acceptablePremium,
+		ProtocolVersion: PEERSWAP_PROTOCOL_VERSION,
+		SwapId:          swap.SwapId,
+		Asset:           elementsAsset,
+		Network:         bitcoinNetwork,
+		Scid:            channelId,
+		Amount:          amtSat,
+		Pubkey:          hex.EncodeToString(swap.Data.GetPrivkey().PubKey().SerializeCompressed()),
+		PremiumLimit:    PremiumLimit,
 	}
 
 	done, err := swap.SendEvent(Event_SwapInSender_OnSwapInRequested, request)
@@ -496,24 +496,22 @@ func (s *SwapService) SwapIn(peer string, chain string, channelId string, initia
 }
 
 const (
-	// feeRateParts is the total number of parts used to express fee rates.
-	feeRateParts = 1e6
+	// premiumRateParts is the total number of parts used to express fee rates.
+	premiumRateParts = 1e6
 )
 
 // ComputePremium computes the premium.
-// premiumRate  should be interpreted as the numerator for a fraction
-// (fixed point arithmetic) whose denominator is 1 million. As a result
-// the effective fee rate charged per mSAT will be: (amount *
-// premiumRate/1,000,000).
+// The premium rate charged per sat will be: (amount * premiumRate/1,000,000).
 func ComputePremium(
 	amtSat uint64, premiumRate int64) int64 {
-	return int64(amtSat) * premiumRate / 1e6
+	return int64(amtSat) * premiumRate / premiumRateParts
 }
 
 // OnSwapInRequestReceived creates a new swap-in process and sends the event to the swap statemachine
 func (s *SwapService) OnSwapInRequestReceived(swapId *SwapId, peerId string, message *SwapInRequestMessage) error {
-	if ComputePremium(message.Amount, s.swapServices.policy.GetSwapInPremiumRate()) > message.AcceptablePremium {
-		err := fmt.Errorf("unacceptable premium rate: %d", message.AcceptablePremium)
+	premium := ComputePremium(message.Amount, s.swapServices.policy.GetSwapInPremiumRatePPM())
+	if premium > message.PremiumLimit {
+		err := fmt.Errorf("unacceptable premium: %d, limit: %d", premium, message.PremiumLimit)
 		msg := fmt.Sprintf("from the %s peer: %s", s.swapServices.lightning.Implementation(), err.Error())
 		// We want to tell our peer why we can not do this swap.
 		msgBytes, msgType, err := MarshalPeerswapMessage(&CancelMessage{
@@ -583,8 +581,9 @@ func (s *SwapService) OnSwapInRequestReceived(swapId *SwapId, peerId string, mes
 
 // OnSwapInRequestReceived creates a new swap-out process and sends the event to the swap statemachine
 func (s *SwapService) OnSwapOutRequestReceived(swapId *SwapId, peerId string, message *SwapOutRequestMessage) error {
-	if ComputePremium(message.Amount, s.swapServices.policy.GetSwapOutPremiumRate()) > message.AcceptablePremium {
-		err := fmt.Errorf("unacceptable premium rate: %d", message.AcceptablePremium)
+	premium := ComputePremium(message.Amount, s.swapServices.policy.GetSwapInPremiumRatePPM())
+	if premium > message.PremiumLimit {
+		err := fmt.Errorf("unacceptable premium: %d, limit: %d", premium, message.PremiumLimit)
 		msg := fmt.Sprintf("from the %s peer: %s", s.swapServices.lightning.Implementation(), err.Error())
 		// We want to tell our peer why we can not do this swap.
 		msgBytes, msgType, err := MarshalPeerswapMessage(&CancelMessage{

@@ -197,8 +197,8 @@ func Test_LndLnd_Bitcoin_SwapIn(t *testing.T) {
 			confirms:           BitcoinConfirms,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -207,10 +207,10 @@ func Test_LndLnd_Bitcoin_SwapIn(t *testing.T) {
 		defer cancel()
 		go func() {
 			peerswapds[1].PeerswapClient.SwapIn(ctx, &peerswaprpc.SwapInRequest{
-				ChannelId:         lcid,
-				SwapAmount:        params.swapAmt,
-				Asset:             asset,
-				AcceptablePremium: params.premiumLimit,
+				ChannelId:    lcid,
+				SwapAmount:   params.swapAmt,
+				Asset:        asset,
+				PremiumLimit: params.premiumLimit,
 			})
 		}()
 		preimageClaimTest(t, params)
@@ -280,8 +280,8 @@ func Test_LndLnd_Bitcoin_SwapIn(t *testing.T) {
 			confirms:           BitcoinConfirms,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -290,10 +290,10 @@ func Test_LndLnd_Bitcoin_SwapIn(t *testing.T) {
 		defer cancel()
 		go func() {
 			peerswapds[1].PeerswapClient.SwapIn(ctx, &peerswaprpc.SwapInRequest{
-				ChannelId:         lcid,
-				SwapAmount:        params.swapAmt,
-				Asset:             asset,
-				AcceptablePremium: params.premiumLimit,
+				ChannelId:    lcid,
+				SwapAmount:   params.swapAmt,
+				Asset:        asset,
+				PremiumLimit: params.premiumLimit,
 			})
 		}()
 		coopClaimTest(t, params)
@@ -364,8 +364,8 @@ func Test_LndLnd_Bitcoin_SwapIn(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -374,10 +374,10 @@ func Test_LndLnd_Bitcoin_SwapIn(t *testing.T) {
 		defer cancel()
 		go func() {
 			peerswapds[1].PeerswapClient.SwapIn(ctx, &peerswaprpc.SwapInRequest{
-				ChannelId:         lcid,
-				SwapAmount:        params.swapAmt,
-				Asset:             asset,
-				AcceptablePremium: params.premiumLimit,
+				ChannelId:    lcid,
+				SwapAmount:   params.swapAmt,
+				Asset:        asset,
+				PremiumLimit: params.premiumLimit,
 			})
 		}()
 		csvClaimTest(t, params)
@@ -454,8 +454,8 @@ func Test_LndLnd_Bitcoin_SwapOut(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_OUT,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 
 		asset := "btc"
@@ -465,10 +465,10 @@ func Test_LndLnd_Bitcoin_SwapOut(t *testing.T) {
 		defer cancel()
 		go func() {
 			peerswapds[0].PeerswapClient.SwapOut(ctx, &peerswaprpc.SwapOutRequest{
-				ChannelId:         lcid,
-				SwapAmount:        params.swapAmt,
-				Asset:             asset,
-				AcceptablePremium: params.premiumLimit,
+				ChannelId:    lcid,
+				SwapAmount:   params.swapAmt,
+				Asset:        asset,
+				PremiumLimit: params.premiumLimit,
 			})
 		}()
 		preimageClaimTest(t, params)
@@ -539,8 +539,8 @@ func Test_LndLnd_Bitcoin_SwapOut(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_OUT,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 
 		asset := "btc"
@@ -550,10 +550,10 @@ func Test_LndLnd_Bitcoin_SwapOut(t *testing.T) {
 		defer cancel()
 		go func() {
 			peerswapds[0].PeerswapClient.SwapOut(ctx, &peerswaprpc.SwapOutRequest{
-				ChannelId:         lcid,
-				SwapAmount:        params.swapAmt,
-				Asset:             asset,
-				AcceptablePremium: params.premiumLimit,
+				ChannelId:    lcid,
+				SwapAmount:   params.swapAmt,
+				Asset:        asset,
+				PremiumLimit: params.premiumLimit,
 			})
 		}()
 		coopClaimTest(t, params)
@@ -624,8 +624,8 @@ func Test_LndLnd_Bitcoin_SwapOut(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_OUT,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -634,10 +634,10 @@ func Test_LndLnd_Bitcoin_SwapOut(t *testing.T) {
 		defer cancel()
 		go func() {
 			peerswapds[0].PeerswapClient.SwapOut(ctx, &peerswaprpc.SwapOutRequest{
-				ChannelId:         lcid,
-				SwapAmount:        params.swapAmt,
-				Asset:             asset,
-				AcceptablePremium: params.premiumLimit,
+				ChannelId:    lcid,
+				SwapAmount:   params.swapAmt,
+				Asset:        asset,
+				PremiumLimit: params.premiumLimit,
 			})
 		}()
 		csvClaimTest(t, params)
@@ -712,8 +712,8 @@ func Test_LndCln_Bitcoin_SwapIn(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -722,10 +722,10 @@ func Test_LndCln_Bitcoin_SwapIn(t *testing.T) {
 		defer cancel()
 		go func() {
 			peerswapd.PeerswapClient.SwapIn(ctx, &peerswaprpc.SwapInRequest{
-				ChannelId:         lcid,
-				SwapAmount:        params.swapAmt,
-				Asset:             asset,
-				AcceptablePremium: params.premiumLimit,
+				ChannelId:    lcid,
+				SwapAmount:   params.swapAmt,
+				Asset:        asset,
+				PremiumLimit: params.premiumLimit,
 			})
 		}()
 		preimageClaimTest(t, params)
@@ -794,8 +794,8 @@ func Test_LndCln_Bitcoin_SwapIn(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -804,10 +804,10 @@ func Test_LndCln_Bitcoin_SwapIn(t *testing.T) {
 		defer cancel()
 		go func() {
 			peerswapd.PeerswapClient.SwapIn(ctx, &peerswaprpc.SwapInRequest{
-				ChannelId:         lcid,
-				SwapAmount:        params.swapAmt,
-				Asset:             asset,
-				AcceptablePremium: params.premiumLimit,
+				ChannelId:    lcid,
+				SwapAmount:   params.swapAmt,
+				Asset:        asset,
+				PremiumLimit: params.premiumLimit,
 			})
 		}()
 
@@ -877,8 +877,8 @@ func Test_LndCln_Bitcoin_SwapIn(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -887,10 +887,10 @@ func Test_LndCln_Bitcoin_SwapIn(t *testing.T) {
 		defer cancel()
 		go func() {
 			peerswapd.PeerswapClient.SwapIn(ctx, &peerswaprpc.SwapInRequest{
-				ChannelId:         lcid,
-				SwapAmount:        params.swapAmt,
-				Asset:             asset,
-				AcceptablePremium: params.premiumLimit,
+				ChannelId:    lcid,
+				SwapAmount:   params.swapAmt,
+				Asset:        asset,
+				PremiumLimit: params.premiumLimit,
 			})
 		}()
 		csvClaimTest(t, params)
@@ -965,8 +965,8 @@ func Test_LndCln_Bitcoin_SwapOut(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_OUT,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -975,10 +975,10 @@ func Test_LndCln_Bitcoin_SwapOut(t *testing.T) {
 		defer cancel()
 		go func() {
 			peerswapd.PeerswapClient.SwapOut(ctx, &peerswaprpc.SwapOutRequest{
-				ChannelId:         lcid,
-				SwapAmount:        params.swapAmt,
-				Asset:             asset,
-				AcceptablePremium: params.premiumLimit,
+				ChannelId:    lcid,
+				SwapAmount:   params.swapAmt,
+				Asset:        asset,
+				PremiumLimit: params.premiumLimit,
 			})
 		}()
 		preimageClaimTest(t, params)
@@ -1047,8 +1047,8 @@ func Test_LndCln_Bitcoin_SwapOut(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_OUT,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -1057,10 +1057,10 @@ func Test_LndCln_Bitcoin_SwapOut(t *testing.T) {
 		defer cancel()
 		go func() {
 			peerswapd.PeerswapClient.SwapOut(ctx, &peerswaprpc.SwapOutRequest{
-				ChannelId:         lcid,
-				SwapAmount:        params.swapAmt,
-				Asset:             asset,
-				AcceptablePremium: params.premiumLimit,
+				ChannelId:    lcid,
+				SwapAmount:   params.swapAmt,
+				Asset:        asset,
+				PremiumLimit: params.premiumLimit,
 			})
 		}()
 		coopClaimTest(t, params)
@@ -1129,8 +1129,8 @@ func Test_LndCln_Bitcoin_SwapOut(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_OUT,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -1139,10 +1139,10 @@ func Test_LndCln_Bitcoin_SwapOut(t *testing.T) {
 		defer cancel()
 		go func() {
 			peerswapd.PeerswapClient.SwapOut(ctx, &peerswaprpc.SwapOutRequest{
-				ChannelId:         lcid,
-				SwapAmount:        params.swapAmt,
-				Asset:             asset,
-				AcceptablePremium: params.premiumLimit,
+				ChannelId:    lcid,
+				SwapAmount:   params.swapAmt,
+				Asset:        asset,
+				PremiumLimit: params.premiumLimit,
 			})
 		}()
 		csvClaimTest(t, params)
@@ -1218,8 +1218,8 @@ func Test_LndLnd_ExcessiveAmount(t *testing.T) {
 			csv:                BitcoinCsv,
 			swapType:           swap.SWAPTYPE_OUT,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 
@@ -1230,10 +1230,10 @@ func Test_LndLnd_ExcessiveAmount(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		_, err = peerswapds[0].PeerswapClient.SwapOut(ctx, &peerswaprpc.SwapOutRequest{
-			ChannelId:         lcid,
-			SwapAmount:        params.swapAmt,
-			Asset:             asset,
-			AcceptablePremium: params.premiumLimit,
+			ChannelId:    lcid,
+			SwapAmount:   params.swapAmt,
+			Asset:        asset,
+			PremiumLimit: params.premiumLimit,
 		})
 		assert.Error(t, err)
 	})
@@ -1302,8 +1302,8 @@ func Test_LndLnd_ExcessiveAmount(t *testing.T) {
 			confirms:           BitcoinConfirms,
 			swapType:           swap.SWAPTYPE_IN,
 			premiumLimit:       int64(channelBalances[0] / 100),
-			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRate,
-			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRate,
+			swapInPremiumRate:  policy.DefaultPolicy().SwapInPremiumRatePPM,
+			swapOutPremiumRate: policy.DefaultPolicy().SwapOutPremiumRatePPM,
 		}
 		asset := "btc"
 		_, err = lightningds[0].SetHtlcMaximumMilliSatoshis(scid, channelBalances[0]*1000/2-1)
@@ -1313,10 +1313,10 @@ func Test_LndLnd_ExcessiveAmount(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		_, err = peerswapds[1].PeerswapClient.SwapIn(ctx, &peerswaprpc.SwapInRequest{
-			ChannelId:         lcid,
-			SwapAmount:        params.swapAmt,
-			Asset:             asset,
-			AcceptablePremium: params.premiumLimit,
+			ChannelId:    lcid,
+			SwapAmount:   params.swapAmt,
+			Asset:        asset,
+			PremiumLimit: params.premiumLimit,
 		})
 		assert.Error(t, err)
 	})

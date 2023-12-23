@@ -359,10 +359,10 @@ type dummyPolicy struct {
 	getMinSwapAmountMsatCalled int
 	getMinSwapAmountMsatReturn uint64
 
-	newSwapsAllowedCalled int
-	newSwapsAllowedReturn bool
-	getSwapInPremiumRate  int64
-	getSwapOutPremiumRate int64
+	newSwapsAllowedCalled    int
+	newSwapsAllowedReturn    bool
+	getSwapInPremiumRatePPM  int64
+	getSwapOutPremiumRatePPM int64
 }
 
 func (d *dummyPolicy) NewSwapsAllowed() bool {
@@ -379,12 +379,12 @@ func (d *dummyPolicy) GetMinSwapAmountMsat() uint64 {
 	return d.getMinSwapAmountMsatReturn
 }
 
-func (d *dummyPolicy) GetSwapInPremiumRate() int64 {
-	return d.getSwapInPremiumRate
+func (d *dummyPolicy) GetSwapInPremiumRatePPM() int64 {
+	return d.getSwapInPremiumRatePPM
 }
 
-func (d *dummyPolicy) GetSwapOutPremiumRate() int64 {
-	return d.getSwapOutPremiumRate
+func (d *dummyPolicy) GetSwapOutPremiumRatePPM() int64 {
+	return d.getSwapOutPremiumRatePPM
 }
 
 func (d *dummyPolicy) IsPeerAllowed(peer string) bool {

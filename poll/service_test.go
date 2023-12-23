@@ -50,11 +50,11 @@ func (m *PolicyMock) IsPeerAllowed(peerId string) bool {
 	return m.allowList[m.called-1]
 }
 
-func (m *PolicyMock) GetSwapInPremiumRate() int64 {
+func (m *PolicyMock) GetSwapInPremiumRatePPM() int64 {
 	return 1
 }
 
-func (m *PolicyMock) GetSwapOutPremiumRate() int64 {
+func (m *PolicyMock) GetSwapOutPremiumRatePPM() int64 {
 	return 1
 }
 

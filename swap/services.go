@@ -36,8 +36,8 @@ type Policy interface {
 	AddToSuspiciousPeerList(pubkey string) error
 	GetReserveOnchainMsat() uint64
 	GetMinSwapAmountMsat() uint64
-	GetSwapInPremiumRate() int64
-	GetSwapOutPremiumRate() int64
+	GetSwapInPremiumRatePPM() int64
+	GetSwapOutPremiumRatePPM() int64
 	NewSwapsAllowed() bool
 }
 
