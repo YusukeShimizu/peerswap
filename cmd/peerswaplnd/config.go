@@ -45,6 +45,7 @@ type PeerSwapConfig struct {
 
 	LndConfig      *LndConfig     `group:"Lnd Grpc config" namespace:"lnd"`
 	ElementsConfig *OnchainConfig `group:"Elements Rpc Config" namespace:"elementsd"`
+	LWKConfig      *LWKConfig     `group:"LWK Config" namespace:"lwk"`
 
 	LiquidEnabled  bool `long:"liquidswaps" description:"enable bitcoin peerswaps"`
 	BitcoinEnabled bool `long:"bitcoinswaps" description:"enable bitcoin peerswaps"`
@@ -74,7 +75,8 @@ func (p *PeerSwapConfig) Validate() error {
 			return err
 		}
 		p.LiquidEnabled = true
-
+	} else if p.LWKConfig.WalletName != "" {
+		p.LiquidEnabled = true
 	}
 	return nil
 }
@@ -160,4 +162,13 @@ func defaultLiquidConfig() *OnchainConfig {
 		RpcWallet:         DefaultLiquidwallet,
 		LiquidSwaps:       true,
 	}
+}
+
+type LWKConfig struct {
+	SignerName       string `long:"signer_name" description:"name of the signer"`
+	WalletName       string `long:"wallet_name" description:"name of the wallet"`
+	LWKEndpoint      string `long:"lwk_endpoint" description:"endpoint for the liquid wallet kit"`
+	ElementsEndpoint string `long:"elements_endpoint" description:"endpoint for the elements rpc"`
+	Network          string `long:"network" description:"network to use"`
+	LiquidSwaps      bool   `long:"liquid_swaps" description:"enable liquid swaps"`
 }

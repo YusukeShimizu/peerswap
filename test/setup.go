@@ -81,7 +81,7 @@ func clnclnSetupWithConfig(t *testing.T, fundAmt, pushAmt uint64, clnConf []stri
 			os.ModePerm,
 		)
 
-		// Use lightningd with --developer turned on 
+		// Use lightningd with --developer turned on
 		lightningd.WithCmd("lightningd")
 
 		// Add plugin to cmd line options
@@ -243,7 +243,7 @@ func mixedSetup(t *testing.T, fundAmt uint64, funder fundingNode) (*testframewor
 		os.ModePerm,
 	)
 
-	// Use lightningd with --developer turned on 
+	// Use lightningd with --developer turned on
 	cln.WithCmd("lightningd")
 
 	// Add plugin to cmd line options
@@ -405,7 +405,7 @@ func clnclnElementsSetup(t *testing.T, fundAmt uint64) (*testframework.BitcoinNo
 			os.ModePerm,
 		)
 
-		// Use lightningd with --developer turned on 
+		// Use lightningd with --developer turned on
 		lightningd.WithCmd("lightningd")
 
 		// Add plugin to cmd line options
@@ -665,7 +665,7 @@ func mixedElementsSetup(t *testing.T, fundAmt uint64, funder fundingNode) (*test
 		os.ModePerm,
 	)
 
-	// Use lightningd with --developer turned on 
+	// Use lightningd with --developer turned on
 	cln.WithCmd("lightningd")
 
 	// Add plugin to cmd line options

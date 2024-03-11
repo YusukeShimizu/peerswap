@@ -51,6 +51,15 @@ type LiquidConf struct {
 	LiquidSwaps     *bool
 }
 
+type LWKConf struct {
+	SignerName       string
+	WalletName       string
+	LWKEndpoint      string
+	ElementsEndpoint string
+	Network          string
+	LiquidSwaps      *bool
+}
+
 type Config struct {
 	LightningDir string
 	PeerswapDir  string
@@ -58,6 +67,7 @@ type Config struct {
 	PolicyPath   string
 	Bitcoin      *BitcoinConf
 	Liquid       *LiquidConf
+	LWK          *LWKConf
 }
 
 func (c Config) String() string {
@@ -175,6 +185,7 @@ func ReadFromFile() Processor {
 		var fileConf struct {
 			Bitcoin *BitcoinConf
 			Liquid  *LiquidConf
+			LWK     *LWKConf
 		}
 
 		err = toml.Unmarshal(data, &fileConf)
@@ -199,6 +210,15 @@ func ReadFromFile() Processor {
 			c.Liquid.RpcPort = fileConf.Liquid.RpcPort
 			c.Liquid.RpcWallet = fileConf.Liquid.RpcWallet
 			c.Liquid.LiquidSwaps = fileConf.Liquid.LiquidSwaps
+		}
+
+		if fileConf.LWK != nil {
+			c.LWK.LWKEndpoint = fileConf.LWK.LWKEndpoint
+			c.LWK.ElementsEndpoint = fileConf.LWK.ElementsEndpoint
+			c.LWK.SignerName = fileConf.LWK.SignerName
+			c.LWK.WalletName = fileConf.LWK.WalletName
+			c.LWK.Network = fileConf.LWK.Network
+			c.LWK.LiquidSwaps = fileConf.LWK.LiquidSwaps
 		}
 
 		return c, nil

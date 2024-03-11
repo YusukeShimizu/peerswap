@@ -9,9 +9,11 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/checksum0/go-electrum/electrum"
 	"github.com/elementsproject/peerswap/elements"
 	"github.com/elementsproject/peerswap/isdev"
 	"github.com/elementsproject/peerswap/log"
+	"github.com/elementsproject/peerswap/lwk/client"
 	"github.com/elementsproject/peerswap/version"
 	"golang.org/x/sys/unix"
 
@@ -164,10 +166,14 @@ func run(ctx context.Context, lightningPlugin *clightning.ClightningClient) erro
 
 	// liquid
 	var liquidOnChainService *onchain.LiquidOnChain
-	var liquidTxWatcher *txwatcher.BlockchainRpcTxWatcher
+	var liquidTxWatcher swap.TxWatcher
 	var liquidRpcWallet *wallet.ElementsRpcWallet
 	var liquidCli *gelements.Elements
 	var liquidEnabled bool
+
+	if *config.Liquid.LiquidSwaps && *config.LWK.LiquidSwaps {
+		return errors.New("both L-BTC and LWK swaps is invalid")
+	}
 
 	if *config.Liquid.LiquidSwaps && liquidWanted(config) {
 		liquidEnabled = true
@@ -201,7 +207,28 @@ func run(ctx context.Context, lightningPlugin *clightning.ClightningClient) erro
 			return err
 		}
 
-		liquidOnChainService = onchain.NewLiquidOnChain(liquidCli, liquidRpcWallet, liquidChain)
+		liquidOnChainService = onchain.NewLiquidOnChain(liquidRpcWallet, liquidChain)
+		supportedAssets = append(supportedAssets, "lbtc")
+		log.Infof("Liquid swaps enabled")
+	} else if *config.LWK.LiquidSwaps {
+		liquidEnabled = true
+		ec, err := electrum.NewClientTCP(ctx, config.LWK.ElementsEndpoint)
+		if err != nil {
+			return err
+		}
+		// This call is blocking, waiting for elements to come alive and sync.
+		lwkWallet, err2 := wallet.NewLWKRpcWallet(client.NewLwk(config.LWK.LWKEndpoint),
+			ec, config.LWK.WalletName, config.LWK.SignerName)
+		if err2 != nil {
+			return err2
+		}
+
+		liquidTxWatcher, err = txwatcher.NewElectrumTxWatcher(ec)
+		if err != nil {
+			return err
+		}
+
+		liquidOnChainService = onchain.NewLiquidOnChain(lwkWallet, getLWKChain(config.LWK.Network))
 		supportedAssets = append(supportedAssets, "lbtc")
 		log.Infof("Liquid swaps enabled")
 	} else {
@@ -412,6 +439,20 @@ func getLiquidChain(li *gelements.Elements) (*network.Network, error) {
 		return &network.Testnet, nil
 	}
 }
+
+func getLWKChain(net string) *network.Network {
+	switch net {
+	case "mainnet":
+		return &network.Liquid
+	case "regtest":
+		return &network.Regtest
+	case "testnet":
+		return &network.Testnet
+	default:
+		return &network.Testnet
+	}
+}
+
 func getBitcoinChain(li *glightning.Lightning) (*chaincfg.Params, error) {
 	gi, err := li.GetInfo()
 	if err != nil {
