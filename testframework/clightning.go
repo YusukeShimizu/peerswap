@@ -118,18 +118,13 @@ func NewCLightningNode(testDir string, bitcoin *BitcoinNode, id int) (*CLightnin
 
 func (n *CLightningNode) Run(waitForReady, waitForBitcoinSynced bool) error {
 	n.DaemonProcess.Run()
-	if waitForReady {
-		err := n.WaitForLog("Server started with public key", TIMEOUT)
-		if err != nil {
-			return fmt.Errorf("CLightningNode.Run() %w", err)
-		}
-	}
-
+	
+	// Establish RPC connection first
 	var counter int
 	var err error
 	for {
-		if counter > 10 {
-			return fmt.Errorf("to many retries: %w", err)
+		if counter > 20 {
+			return fmt.Errorf("too many retries establishing RPC connection: %w", err)
 		}
 
 		err = n.StartProxy()
@@ -140,6 +135,28 @@ func (n *CLightningNode) Run(waitForReady, waitForBitcoinSynced bool) error {
 		}
 
 		break
+	}
+
+	if waitForReady {
+		// Wait for CLN to be ready via RPC
+		log.Printf("Waiting for CLN to be ready via RPC...")
+		err = WaitFor(func() bool {
+			info, err := n.Rpc.GetInfo()
+			if err != nil {
+				// RPC might not be fully ready yet
+				return false
+			}
+			// CLN is ready when it has a valid node ID
+			if info.Id != "" {
+				log.Printf("CLN node ready with ID: %s", info.Id)
+				return true
+			}
+			return false
+		}, TIMEOUT)
+		
+		if err != nil {
+			return fmt.Errorf("CLightningNode.Run() startup detection failed: %w", err)
+		}
 	}
 
 	// Cache info
